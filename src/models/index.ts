@@ -3,6 +3,8 @@ import {Mapping} from './Mapping';
 import {Predicate} from './Predicate';
 import { Implementation } from './Implementation';
 import { Argument } from './Argument';
+import { Return } from './Return';
+import { Composition } from './Composition';
 
 export {
     Function,
@@ -10,4 +12,6 @@ export {
     Mapping,
     Predicate,
     Argument,
+    Return,
+    Composition
 }

@@ -8,6 +8,7 @@ const prefixes = {
     fno: "https://w3id.org/function/ontology#",
     fnoi: "https://w3id.org/function/vocabulary/implementation#",
     fnom: "https://w3id.org/function/vocabulary/mapping#",
+    fnoc: "https://w3id.org/function/vocabulary/composition#",
     fns: "http://example.com/functions#"
 };
 
