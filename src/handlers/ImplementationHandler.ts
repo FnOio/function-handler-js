@@ -1,61 +1,62 @@
-import { ArgumentMap, Handler } from "./Handler";
+import { ArgumentMap, Handler } from './Handler';
 import { CompositionHandler } from './CompositionHandler';
 
 export class ImplementationHandler {
-    private _loadedImplementations: {
-        [implementationId: string]: {
-            fnId?: string,
-            handler: Handler
-            options: any
-        }
-    };
-    private _compositionHandler;
+  loadedImplementations: {
+    [implementationId: string]: {
+      fnId?: string,
+      handler: Handler,
+      options: any,
+    },
+  };
 
-    constructor() {
-        this._loadedImplementations = {};
-        this._compositionHandler = new CompositionHandler();
-    }
+  compositionHandler: CompositionHandler;
+  constructor() {
+    this.loadedImplementations = {};
+    this.compositionHandler = new CompositionHandler();
+  }
 
-    get compositionHandler() {
-        return this._compositionHandler;
-    }
-
-    loadImplementation(implementationId: string, handler: Handler, options: any = null): void {
-        this._loadedImplementations[implementationId] = { options, handler };
-    }
+  loadImplementation(implementationId: string, handler: Handler, options: any = null): void {
+    this.loadedImplementations[implementationId] = { options, handler };
+  }
 
     // TODO what if same implementation for multiple functions?
-    setOptions(implementationId: string, options: any) {
-        if (!this._loadedImplementations[implementationId]) {
-            return false;
-        }
-        this._loadedImplementations[implementationId].options = Object.assign(this._loadedImplementations[implementationId].options, options);
-        return true;
+  setOptions(implementationId: string, options: any) {
+    if (!this.loadedImplementations[implementationId]) {
+      return false;
     }
+    this.loadedImplementations[implementationId].options = Object.assign(
+      this.loadedImplementations[implementationId].options, options);
+    return true;
+  }
 
-    linkImplementationToFunction(implementationId: string, fnId: string): boolean {
-        if (!this._loadedImplementations[implementationId]) {
-            return false;
-        }
-        this._loadedImplementations[implementationId].fnId = fnId;
-        return true;
+  linkImplementationToFunction(implementationId: string, fnId: string): boolean {
+    if (!this.loadedImplementations[implementationId]) {
+      return false;
     }
+    this.loadedImplementations[implementationId].fnId = fnId;
+    return true;
+  }
 
-    hasImplementation(implementationId: string): boolean {
-        return this._loadedImplementations[implementationId] !== undefined;
-    }
+  hasImplementation(implementationId: string): boolean {
+    return this.loadedImplementations[implementationId] !== undefined;
+  }
 
-    hasImplementationForFunction(fnId: string): boolean {
-        return this.getImplementations(fnId).length > 0;
-    }
+  hasImplementationForFunction(fnId: string): boolean {
+    return this.getImplementations(fnId).length > 0;
+  }
 
-    getImplementations(fnId: string): string[] {
-        return Object.keys(this._loadedImplementations).filter(implementationId => {
-            return this._loadedImplementations[implementationId].fnId === fnId && this._loadedImplementations[implementationId].handler
-        })
-    }
+  getImplementations(fnId: string): string[] {
+    const out = Object.keys(this.loadedImplementations)
+      .filter((implementationId) => {
+        return this.loadedImplementations[implementationId].fnId === fnId
+          && this.loadedImplementations[implementationId].handler;
+      });
+    return out;
+  }
 
-    async executeImplementation(implementationId: string, args: ArgumentMap) {
-        return this._loadedImplementations[implementationId].handler.executeFunction(args, this._loadedImplementations[implementationId].options);
-    }
+  async executeImplementation(implementationId: string, args: ArgumentMap) {
+    return this.loadedImplementations[implementationId]
+      .handler.executeFunction(args, this.loadedImplementations[implementationId].options);
+  }
 }
