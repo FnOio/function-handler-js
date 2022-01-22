@@ -78,28 +78,33 @@ describe('FunctionHandler tests', () => { // the tests container
     return;
   });
 
-  it.only('wf01', async () => {
+  it.only('wf: test individual functions', async () => {
     const handler = new FunctionHandler();
     const ttlParametersAndOutputs = readFile('src/resources/wf/parameters-and-outputs.ttl');
-    const ttlWf01 = readFile('src/resources/wf/wf01.ttl');
-    const ttlWfFunctionA = readFile('src/resources/wf/functionA.ttl');
-    const ttlWfFunctionB = readFile('src/resources/wf/functionB.ttl');
-    const ttlWfFunctionC = readFile('src/resources/wf/functionC.ttl');
-
+    // Map functionLabel on turtle file
     const labelOnTtlFile = Object
       .fromEntries(['functionA', 'functionB', 'functionC']
                      .map((x) => {
                        return [x, readFile(`src/resources/wf/${x}.ttl`)];
                      }));
+    // Add parameters and outputs graph
+    await handler.addFunctionResource(
+      `${prefixes.fns}ParamsAndOutputs`,
+      {
+        type: 'string',
+        contents:  ttlParametersAndOutputs,
+        contentType: 'text/turtle',
+      });
+    // Add function graphs
     await Promise.all(Object.entries(labelOnTtlFile)
       .map(([lbl, ttl]) => handler.addFunctionResource(
         `${prefixes.fns}${lbl}`,
         {
           type: 'string',
-          contents: ttlParametersAndOutputs + ttl,
+          contents:  ttl,
           contentType: 'text/turtle',
         })));
-
+    // function objects
     const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
     const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
     const fnC = await handler.getFunction(`${prefixes.fns}functionC`);
@@ -110,11 +115,9 @@ describe('FunctionHandler tests', () => { // the tests container
       expect(f.id).not.to.be.null;
     };
     functionArray.forEach(minimalFunctionTests);
+    // Map function labels to JS implementations
     const functionJavaScriptImplementations = {
-      functionA: x => {
-        const stophere=0;
-        return `A(${x})`;
-      },
+      functionA: x => `A(${x})`,
       functionB: x => `B(${x})`,
       functionC: x => `C(${x})`,
     };
@@ -126,7 +129,7 @@ describe('FunctionHandler tests', () => { // the tests container
           .loadImplementation(
             `${prefixes.fns}${lbl}Implementation`,
             jsHandler,
-            { fn: fn },
+            { fn },
           );
       });
 
@@ -134,25 +137,10 @@ describe('FunctionHandler tests', () => { // the tests container
     const resultB = await handler.executeFunction(fnB, { [`${prefixes.fns}str0`]: 2 });
     const resultC = await handler.executeFunction(fnC, { [`${prefixes.fns}str0`]: 3 });
 
-    console.log(`
-    resultA: ${JSON.stringify(resultA)}
-    resultB: ${JSON.stringify(resultB)}
-    resultC: ${JSON.stringify(resultC)}
-    `);
-    // expect(fn.id).to.equal(`${prefixes.fns}functionA`);
-    //
-    // const jsHandler = new JavaScriptHandler();
-    // handler.implementationHandler
-    //   .loadImplementation(`${prefixes.fns}functionAImplementation`,
-    //                       jsHandler,
-    //                       { fn: x => `A(${x})` });
-    // const result = await handler.executeFunction(fn, {
-    //   [`${prefixes.fns}str0`]: 1,
-    //   [`${prefixes.fns}b`]: 2,
-    //   [`${prefixes.fns}c`]: 3,
-    // });
+    expect(resultA[`${prefixes.fns}out`]).to.equal('A(1)');
+    expect(resultB[`${prefixes.fns}out`]).to.equal('B(2)');
+    expect(resultC[`${prefixes.fns}out`]).to.equal('C(3)');
 
-    // expect(result[`${prefixes.fns}out`]).to.equal(6);
     return;
   });
 });
