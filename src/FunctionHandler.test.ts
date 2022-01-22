@@ -77,4 +77,82 @@ describe('FunctionHandler tests', () => { // the tests container
     expect(result[`${prefixes.fns}out`]).to.equal(6);
     return;
   });
+
+  it.only('wf01', async () => {
+    const handler = new FunctionHandler();
+    const ttlParametersAndOutputs = readFile('src/resources/wf/parameters-and-outputs.ttl');
+    const ttlWf01 = readFile('src/resources/wf/wf01.ttl');
+    const ttlWfFunctionA = readFile('src/resources/wf/functionA.ttl');
+    const ttlWfFunctionB = readFile('src/resources/wf/functionB.ttl');
+    const ttlWfFunctionC = readFile('src/resources/wf/functionC.ttl');
+
+    const labelOnTtlFile = Object
+      .fromEntries(['functionA', 'functionB', 'functionC']
+                     .map((x) => {
+                       return [x, readFile(`src/resources/wf/${x}.ttl`)];
+                     }));
+    await Promise.all(Object.entries(labelOnTtlFile)
+      .map(([lbl, ttl]) => handler.addFunctionResource(
+        `${prefixes.fns}${lbl}`,
+        {
+          type: 'string',
+          contents: ttlParametersAndOutputs + ttl,
+          contentType: 'text/turtle',
+        })));
+
+    const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
+    const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
+    const fnC = await handler.getFunction(`${prefixes.fns}functionC`);
+    const functionArray = [fnA, fnB, fnC];
+    // Minimal tests that every function must pass
+    const minimalFunctionTests = (f) => {
+      expect(f).not.to.be.null;
+      expect(f.id).not.to.be.null;
+    };
+    functionArray.forEach(minimalFunctionTests);
+    const functionJavaScriptImplementations = {
+      functionA: x => {
+        const stophere=0;
+        return `A(${x})`;
+      },
+      functionB: x => `B(${x})`,
+      functionC: x => `C(${x})`,
+    };
+    // Load JS implementations
+    const jsHandler = new JavaScriptHandler();
+    Object.entries(functionJavaScriptImplementations)
+      .forEach(([lbl, fn]) => {
+        handler.implementationHandler
+          .loadImplementation(
+            `${prefixes.fns}${lbl}Implementation`,
+            jsHandler,
+            { fn: fn },
+          );
+      });
+
+    const resultA = await handler.executeFunction(fnA, { [`${prefixes.fns}str0`]: 1 });
+    const resultB = await handler.executeFunction(fnB, { [`${prefixes.fns}str0`]: 2 });
+    const resultC = await handler.executeFunction(fnC, { [`${prefixes.fns}str0`]: 3 });
+
+    console.log(`
+    resultA: ${JSON.stringify(resultA)}
+    resultB: ${JSON.stringify(resultB)}
+    resultC: ${JSON.stringify(resultC)}
+    `);
+    // expect(fn.id).to.equal(`${prefixes.fns}functionA`);
+    //
+    // const jsHandler = new JavaScriptHandler();
+    // handler.implementationHandler
+    //   .loadImplementation(`${prefixes.fns}functionAImplementation`,
+    //                       jsHandler,
+    //                       { fn: x => `A(${x})` });
+    // const result = await handler.executeFunction(fn, {
+    //   [`${prefixes.fns}str0`]: 1,
+    //   [`${prefixes.fns}b`]: 2,
+    //   [`${prefixes.fns}c`]: 3,
+    // });
+
+    // expect(result[`${prefixes.fns}out`]).to.equal(6);
+    return;
+  });
 });
