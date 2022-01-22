@@ -1,0 +1,77 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex: <http://www.example.com#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .       
+@prefix fns: <http://example.com/functions#> .
+@prefix fnoc: <https://w3id.org/function/vocabulary/composition#> .
+
+fns:sum3 rdf:type fno:Function ;
+    dcterms:description "Description of the sum3 function"@en ;
+    rdfs:label "sum3"@en ;
+    fno:expects ( fns:aParameter fns:bParameter fns:cParameter ) ;
+    fno:returns ( fns:sumOutput ) .
+
+fns:cParameter rdf:type fno:Parameter ;
+    rdfs:label "c"@en ;
+    fno:predicate fns:c ;
+    fno:required "true"^^xsd:boolean .
+
+fns:sum3_1 fnoc:applies fns:sum .
+fns:sum3_2 fnoc:applies fns:sum .
+
+fns:sum3Composition rdf:type fnoc:Composition ;   
+    fnoc:composedOf [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:sum3;
+            fnoc:functionParameter fns:aParameter 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:sum3_1;
+            fnoc:functionParameter fns:aParameter
+        ] 
+    ],
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:sum3;
+            fnoc:functionParameter fns:bParameter 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:sum3_1;
+            fnoc:functionParameter fns:bParameter
+        ] 
+    ],
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:sum3_1;
+            fnoc:functionOutput fns:sumOutput 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:sum3_2;
+            fnoc:functionParameter fns:aParameter
+        ] 
+    ],
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:sum3;
+            fnoc:functionParameter fns:cParameter  
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:sum3_2;
+            fnoc:functionParameter fns:bParameter
+        ] 
+    ],
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:sum3_2;
+            fnoc:functionOutput fns:sumOutput 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:sum3;
+            fnoc:functionOutput fns:sumOutput 
+        ] 
+    ] .
