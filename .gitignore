@@ -2,3 +2,5 @@ temp.jsonld
 node_modules/
 functionhub_implementations/
 function-handler-js.iml
+
+.idea/
