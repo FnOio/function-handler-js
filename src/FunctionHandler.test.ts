@@ -5,10 +5,12 @@ import { JavaScriptHandler } from './handlers/JavaScriptHandler';
 import prefixes from './prefixes';
 const fs = require('fs');
 
-const fnTtl = fs.readFileSync('src/resources/sum.ttl', { encoding:'utf-8' });
+function readFile(path) {
+  return fs.readFileSync(path, { encoding:'utf-8' });
+}
+const fnTtl = readFile('src/resources/sum.ttl');
 
-const fnTtlComposition = fs.readFileSync('src/resources/sum-composition.ttl',
-                                         { encoding:'utf-8' });
+const fnTtlComposition = readFile('src/resources/sum-composition.ttl');
 
 describe('FunctionHandler tests', () => { // the tests container
 
