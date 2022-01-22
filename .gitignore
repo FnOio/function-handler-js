@@ -4,3 +4,5 @@ functionhub_implementations/
 function-handler-js.iml
 
 .idea/
+
+dist/
