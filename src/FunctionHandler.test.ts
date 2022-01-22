@@ -77,16 +77,19 @@ describe('FunctionHandler tests', () => { // the tests container
     expect(result[`${prefixes.fns}out`]).to.equal(6);
     return;
   });
+});
 
-  it.only('wf: test individual functions', async () => {
-    const handler = new FunctionHandler();
-    const ttlParametersAndOutputs = readFile('src/resources/wf/parameters-and-outputs.ttl');
-    // Map functionLabel on turtle file
-    const labelOnTtlFile = Object
-      .fromEntries(['functionA', 'functionB', 'functionC']
-                     .map((x) => {
-                       return [x, readFile(`src/resources/wf/${x}.ttl`)];
-                     }));
+describe('Workflow', () => {
+  const handler = new FunctionHandler();
+  const ttlParametersAndOutputs = readFile('src/resources/wf/parameters-and-outputs.ttl');
+  // Map functionLabel on turtle file
+  const labelOnTtlFile = Object
+    .fromEntries(['functionA', 'functionB', 'functionC']
+                   .map((x) => {
+                     return [x, readFile(`src/resources/wf/${x}.ttl`)];
+                   }));
+
+  const loadParametersAndOutputsGraph = async () => {
     // Add parameters and outputs graph
     await handler.addFunctionResource(
       `${prefixes.fns}ParamsAndOutputs`,
@@ -95,15 +98,25 @@ describe('FunctionHandler tests', () => { // the tests container
         contents:  ttlParametersAndOutputs,
         contentType: 'text/turtle',
       });
+  };
+  const loadFunctionGraphs = async () => {
     // Add function graphs
     await Promise.all(Object.entries(labelOnTtlFile)
-      .map(([lbl, ttl]) => handler.addFunctionResource(
-        `${prefixes.fns}${lbl}`,
-        {
-          type: 'string',
-          contents:  ttl,
-          contentType: 'text/turtle',
-        })));
+                        .map(([lbl, ttl]) => handler.addFunctionResource(
+                          `${prefixes.fns}${lbl}`,
+                          {
+                            type: 'string',
+                            contents:  ttl,
+                            contentType: 'text/turtle',
+                          })));
+  };
+  // Before the first test
+  before(async () => {
+    await loadParametersAndOutputsGraph();
+    await loadFunctionGraphs();
+  });
+  //
+  it('Test individual functions', async () => {
     // function objects
     const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
     const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
