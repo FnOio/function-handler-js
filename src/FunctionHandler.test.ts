@@ -99,16 +99,18 @@ describe('Workflow', () => {
         contentType: 'text/turtle',
       });
   };
+  const loadFunctionResource =  (iri, contents) => {
+    return handler.addFunctionResource(iri, // tslint:disable-next-line:align
+      {
+        contents,
+        type:'string',
+        contentType:'text/turtle',
+      });
+  };
   const loadFunctionGraphs = async () => {
     // Add function graphs
     await Promise.all(Object.entries(labelOnTtlFile)
-                        .map(([lbl, ttl]) => handler.addFunctionResource(
-                          `${prefixes.fns}${lbl}`,
-                          {
-                            type: 'string',
-                            contents:  ttl,
-                            contentType: 'text/turtle',
-                          })));
+                        .map(([lbl, ttl]) => loadFunctionResource(`${prefixes.fns}${lbl}`, ttl)));
   };
   // Before the first test
   before(async () => {
@@ -154,6 +156,58 @@ describe('Workflow', () => {
     expect(resultB[`${prefixes.fns}out`]).to.equal('B(2)');
     expect(resultC[`${prefixes.fns}out`]).to.equal('C(3)');
 
+    return;
+  });
+  //
+  it.only('Test composition AB', async () => {
+    // load composition resources
+    await loadFunctionResource(`${prefixes.fns}compositionAB`,
+                               readFile('src/resources/wf/compositionAB.ttl'));
+    // function objects
+    const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
+    const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
+    const fnC = await handler.getFunction(`${prefixes.fns}functionC`);
+    const fnAB = await handler.getFunction(`${prefixes.fns}functionAB`);
+    const functionArray = [fnA, fnB, fnC];
+    // Minimal tests that every function must pass
+    const minimalFunctionTests = (f) => {
+      expect(f).not.to.be.null;
+      expect(f.id).not.to.be.null;
+    };
+    functionArray.forEach(minimalFunctionTests);
+    // Map function labels to JS implementations
+    const functionJavaScriptImplementations = {
+      functionA: x => `A(${x})`,
+      functionB: x => `B(${x})`,
+      functionC: x => `C(${x})`,
+    };
+    // Load JS implementations
+    const jsHandler = new JavaScriptHandler();
+    Object.entries(functionJavaScriptImplementations)
+      .forEach(([lbl, fn]) => {
+        handler.implementationHandler
+          .loadImplementation(
+            `${prefixes.fns}${lbl}Implementation`,
+            jsHandler,
+            { fn },
+          );
+      });
+
+    const resultA = await handler.executeFunction(fnA, { [`${prefixes.fns}str0`]: 1 });
+    const resultB = await handler.executeFunction(fnB, { [`${prefixes.fns}str0`]: 2 });
+    const resultC = await handler.executeFunction(fnC, { [`${prefixes.fns}str0`]: 3 });
+
+    expect(resultA[`${prefixes.fns}out`]).to.equal('A(1)');
+    expect(resultB[`${prefixes.fns}out`]).to.equal('B(2)');
+    expect(resultC[`${prefixes.fns}out`]).to.equal('C(3)');
+
+    console.log(resultA, resultB, resultC);
+
+    const resultAB = await handler.executeFunction(fnAB, { [`${prefixes.fns}str0`]: 1 });
+    // TODO: the result is incorrect.
+    // expected: 'B(A(1))'
+    // actual: 'A(A(1))'
+    console.log(resultAB);
     return;
   });
 });
