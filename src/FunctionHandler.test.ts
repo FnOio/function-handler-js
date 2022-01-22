@@ -159,7 +159,7 @@ describe('Workflow', () => {
     return;
   });
   //
-  it.only('Test composition AB', async () => {
+  it('Test composition AB', async () => {
     // load composition resources
     await loadFunctionResource(`${prefixes.fns}compositionAB`,
                                readFile('src/resources/wf/compositionAB.ttl'));
@@ -193,21 +193,12 @@ describe('Workflow', () => {
           );
       });
 
-    const resultA = await handler.executeFunction(fnA, { [`${prefixes.fns}str0`]: 1 });
-    const resultB = await handler.executeFunction(fnB, { [`${prefixes.fns}str0`]: 2 });
-    const resultC = await handler.executeFunction(fnC, { [`${prefixes.fns}str0`]: 3 });
-
-    expect(resultA[`${prefixes.fns}out`]).to.equal('A(1)');
-    expect(resultB[`${prefixes.fns}out`]).to.equal('B(2)');
-    expect(resultC[`${prefixes.fns}out`]).to.equal('C(3)');
-
-    console.log(resultA, resultB, resultC);
-
     const resultAB = await handler.executeFunction(fnAB, { [`${prefixes.fns}str0`]: 1 });
     // TODO: the result is incorrect.
     // expected: 'B(A(1))'
     // actual: 'A(A(1))'
     console.log(resultAB);
+    expect(resultAB[`${prefixes.fns}out`]).to.equal('B(A(1))');
     return;
   });
 });
