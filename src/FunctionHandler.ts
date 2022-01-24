@@ -8,6 +8,25 @@ import prefixes from './prefixes';
 import { Term } from 'rdf-js';
 import { ImplementationHandler } from './handlers/ImplementationHandler';
 
+type DependencyInputs = {
+  type: "inputs",
+}
+
+type DependencyOutputs = {
+  type: "outputs",
+}
+
+type DependencyFunction = {
+  type: "function",
+  fn: Function
+  inputs: {
+    [predicate: string]: string[]
+  },
+  outputs: {
+    [predicate: string]: string[]
+  }
+}
+
 export class FunctionHandler {
   private graphHandler: GraphHandler;
   implementationHandler: ImplementationHandler;
@@ -23,9 +42,10 @@ export class FunctionHandler {
 
   async getFunction(iri: string): Promise<Function> {
     const term = this.graphHandler.getSubjectOfType(iri, `${prefixes.fno}Function`);
-        // tslint:disable-next-line:no-function-constructor-with-string-args
-    return term ? Promise.resolve(new Function(term!))
-            : Promise.reject(`Cannot find function for iri: ${iri}`);
+    if (!term) {
+      throw new Error(`Cannot find function for iri: ${iri}`)
+    }
+    return new Function(term);
   }
 
   async executeFunction(fn: Function, args: ArgumentMap) {
@@ -38,7 +58,6 @@ export class FunctionHandler {
       return this.implementationHandler.executeImplementation(handler.id, args);
     }
 
-      // tslint:disable-next-line:max-line-length
     throw new Error(`Could not find any relevant implementation or composition to execute ${fn.id}`);
   }
 
@@ -50,16 +69,14 @@ export class FunctionHandler {
     const loaded = {};
     for (const mapping of mappings) {
       const implementations = this.getImplementationsFromMapping(mapping);
-      const loadedImplementations = implementations
-          .filter((implementation) => {
-            const implementationLinked = this.implementationHandler
-                  .linkImplementationToFunction(implementation.id, fn.id);
-            const optionsAreSet = this.implementationHandler.setOptions(implementation.id, {
-              args: this.getArgsFromMapping(mapping),
-              returns: this.getReturnsFromMapping(mapping),
-            });
-            return implementationLinked && optionsAreSet;
-          });
+      const loadedImplementations = implementations.filter((implementation) => {
+        const implementationLinked = this.implementationHandler.linkImplementationToFunction(implementation.id, fn.id);
+        const optionsAreSet = this.implementationHandler.setOptions(implementation.id, {
+          args: this.getArgsFromMapping(mapping),
+          returns: this.getReturnsFromMapping(mapping),
+        });
+        return implementationLinked && optionsAreSet;
+      });
       if (loadedImplementations.length > 0) {
         loaded[mapping.id] = {
           mapping,
@@ -122,8 +139,7 @@ export class FunctionHandler {
   }
 
   private getImplementationsFromMapping(mapping: Mapping): Implementation[] {
-    const implementations = this.getObjects(mapping.term,
-                                            $rdf.sym(`${prefixes.fno}implementation`));
+    const implementations = this.getObjects(mapping.term, $rdf.sym(`${prefixes.fno}implementation`));
     if (implementations.length === 0) {
       return [];
     }
@@ -243,103 +259,101 @@ export class FunctionHandler {
   private getCompositionsFromFunction(fn: Function): Composition[] {
     const outputArray = this.getSingleObject(fn.term, $rdf.sym(`${prefixes.fno}returns`)).elements;
     const outHash = outputArray.map(o => o.value).sort().join('_');
-    return this.graphHandler
-      .match(null, $rdf.sym(`${prefixes.rdf}type`),
-             $rdf.sym(`${prefixes.fnoc}Composition`))
-      .map(s => s.subject).filter((composition) => {
-        const outputs: Term[] = [];
-        this.getObjects(composition, $rdf.sym(`${prefixes.fnoc}composedOf`))
-          .forEach((compositionMapping) => {
-            const mapTos = this.getSingleObject(compositionMapping,
-                                                $rdf.sym(`${prefixes.fnoc}mapTo`));
-            if (this.exists(mapTos,
-                            $rdf.sym(`${prefixes.fnoc}constituentFunction`), fn.term)) {
-              outputs.push(this.getSingleObject(mapTos,
-                                                $rdf.sym(`${prefixes.fnoc}functionOutput`)));
-            }
-          });
-        return outputs.map(o => o.value).sort().join('_') === outHash;
-      }).map(c => new Composition(c));
+    return this.graphHandler.match(null, $rdf.sym(`${prefixes.rdf}type`), $rdf.sym(`${prefixes.fnoc}Composition`)).map(s => s.subject).filter((composition) => {
+      const outputs: Term[] = [];
+      this.getObjects(composition, $rdf.sym(`${prefixes.fnoc}composedOf`)).forEach((compositionMapping) => {
+        const mapTos = this.getSingleObject(compositionMapping,
+          $rdf.sym(`${prefixes.fnoc}mapTo`));
+        if (this.exists(mapTos,
+          $rdf.sym(`${prefixes.fnoc}constituentFunction`), fn.term)) {
+          outputs.push(this.getSingleObject(mapTos,
+            $rdf.sym(`${prefixes.fnoc}functionOutput`)));
+        }
+      });
+      return outputs.map(o => o.value).sort().join('_') === outHash;
+    }).map(c => new Composition(c));
   }
 
   private tryToLoadComposition(composition: Composition) {
     const addFullFunctionToDependency = (compositionMap: Term, composedOfTerm: Term) => {
       const fn = this.getSingleObject(compositionMap,
-                                      $rdf.sym(`${prefixes.fnoc}constituentFunction`));
+        $rdf.sym(`${prefixes.fnoc}constituentFunction`));
       let rootFn = fn;
       try {
         rootFn = this.getSingleObject(fn, $rdf.sym(`${prefixes.fnoc}applies`));
       } catch (e) {
-                // no problem
+        // no problem
       }
       tryAddFunctionToDependency(fn, rootFn);
       try {
         const param = this.getSingleObject(compositionMap,
-                                           $rdf.sym(`${prefixes.fnoc}functionParameter`));
+          $rdf.sym(`${prefixes.fnoc}functionParameter`));
         const predicate = this.getSingleObject(param, $rdf.sym(`${prefixes.fno}predicate`));
-        addFunctionParameterToDependency(fn, predicate, composedOfTerm);
+        addFunctionParameterToDependency(dependencyMeta[fn.value] as DependencyFunction, predicate, composedOfTerm);
         return `${fn.value}_inputs`;
       } catch (e) {
-                // no problem
+        // no problem
       }
       try {
         const output = this.getSingleObject(compositionMap,
-                                            $rdf.sym(`${prefixes.fnoc}functionOutput`));
+          $rdf.sym(`${prefixes.fnoc}functionOutput`));
         const predicate = this.getSingleObject(output, $rdf.sym(`${prefixes.fno}predicate`));
-        addFunctionOutputToDependency(fn, predicate, composedOfTerm);
+        addFunctionOutputToDependency(dependencyMeta[fn.value] as DependencyFunction, predicate, composedOfTerm);
         return `${fn.value}_outputs`;
       } catch (e) {
-                // no problem
+        // no problem
       }
       return fn.value;
     };
     const composedOfValueMap = {};
-    const dependencyMeta = {};
+    const dependencyMeta: {
+      [key: string]: DependencyInputs | DependencyOutputs | DependencyFunction
+    } = {};
     const dependencyMap = {};
     const composedOfTerms = this.getObjects(composition.term,
-                                            $rdf.sym(`${prefixes.fnoc}composedOf`));
+      $rdf.sym(`${prefixes.fnoc}composedOf`));
     composedOfTerms.forEach((composedOfTerm) => {
-            // - make composedOfMap
-            // composedOf1: a
-            // composedOf2: b
-            // composedOf3: null
-            // composedOf4: c
-            // composedOf5: null
+      // - make composedOfMap
+      // composedOf1: a
+      // composedOf2: b
+      // composedOf3: null
+      // composedOf4: c
+      // composedOf5: null
       composedOfValueMap[composedOfTerm.value] = null;
-            // sum31:
-            //   inputs:
-            //     a: [composedOf1]
-            //     b: [composedOf2]
-            //   outputs:
-            //     o: [composedOf3]
-            // sum32:
-            //   inputs:
-            //     a: [composedOf3]
-            //     b: [composedOf4]
-            //   outputs:
-            //     o: [composedOf5]
+      // sum31:
+      //   inputs:
+      //     a: [composedOf1]
+      //     b: [composedOf2]
+      //   outputs:
+      //     o: [composedOf3]
+      // sum32:
+      //   inputs:
+      //     a: [composedOf3]
+      //     b: [composedOf4]
+      //   outputs:
+      //     o: [composedOf5]
       const mapFrom = this.getSingleObject(composedOfTerm,
-                                           $rdf.sym(`${prefixes.fnoc}mapFrom`));
-            // - make functionMaps for all functions
+        $rdf.sym(`${prefixes.fnoc}mapFrom`));
+      // - make functionMaps for all functions
       const depFrom = addFullFunctionToDependency(mapFrom, composedOfTerm);
       const mapTo = this.getSingleObject(composedOfTerm, $rdf.sym(`${prefixes.fnoc}mapTo`));
       const depTo = addFullFunctionToDependency(mapTo, composedOfTerm);
-            // - make full dependency graph
-            // let dependencyMap = {
-            //     sum3i: [],
-            //     sum3: ['sum3i'],
-            //     sum3o: ['sum3', 'sum32o'],
-            //     sum31i: ['sum3i'],
-            //     sum31: ['sum31i'],
-            //     sum31o: ['sum31'],
-            //     sum32i: ['sum31o', 'sum3i'],
-            //     sum32: ['sum32i'],
-            //     sum32o: ['sum32'],
-            // }
+      // - make full dependency graph
+      // let dependencyMap = {
+      //     sum3i: [],
+      //     sum3: ['sum3i'],
+      //     sum3o: ['sum3', 'sum32o'],
+      //     sum31i: ['sum3i'],
+      //     sum31: ['sum31i'],
+      //     sum31o: ['sum31'],
+      //     sum32i: ['sum31o', 'sum3i'],
+      //     sum32: ['sum32i'],
+      //     sum32o: ['sum32'],
+      // }
       dependencyMap[depTo].push(depFrom);
     });
     const dependencyList = flatten(resolve(dependencyMap));
-        // - first and last must refer to same function === composed function
+    // - first and last must refer to same function === composed function
     const compositionFn = dependencyList[0].slice(0, -7);
     if (dependencyList[0].slice(0, -7) !== dependencyList[dependencyList.length - 1].slice(0, -8)) {
       throw new Error(`No unique composed function detected: found ${dependencyList[0]} and ${dependencyList[dependencyList.length - 1]}`);
@@ -350,9 +364,9 @@ export class FunctionHandler {
 
     const otherFn = dependencyList.filter(resolvedId => dependencyMeta[resolvedId].type === 'function' && resolvedId !== compositionFn);
     for (const fnId of otherFn) {
-      const mappedImplementations = this.linkMappedImplementations(dependencyMeta[fnId].fn);
+      const mappedImplementations = this.linkMappedImplementations((dependencyMeta[fnId] as DependencyFunction).fn);
       if (Object.keys(mappedImplementations).length === 0) {
-        console.warn(`Couldn't link implementation of ${dependencyMeta[fnId].fn.id}`);
+        console.warn(`Couldn't link implementation of ${(dependencyMeta[fnId] as DependencyFunction).fn.id}`);
         return false;
       }
     }
@@ -363,24 +377,22 @@ export class FunctionHandler {
       dependencyList,
       implementationHandler: this.implementationHandler,
     };
-    this.implementationHandler.loadImplementation(composition.id,
-                                                  this.implementationHandler.compositionHandler,
-                                                  implementationOptions);
+    this.implementationHandler.loadComposition(composition.id, implementationOptions);
 
     return true;
 
-    function addFunctionParameterToDependency(fn: Term, predicate: Term, composedOf: Term) {
-      if (!dependencyMeta[fn.value].inputs[predicate.value]) {
-        dependencyMeta[fn.value].inputs[predicate.value] = [];
+    function addFunctionParameterToDependency(dependencyFunction: DependencyFunction, predicate: Term, composedOf: Term) {
+      if (!dependencyFunction.inputs[predicate.value]) {
+        dependencyFunction.inputs[predicate.value] = [];
       }
-      dependencyMeta[fn.value].inputs[predicate.value].push(composedOf.value);
+      dependencyFunction.inputs[predicate.value].push(composedOf.value);
     }
 
-    function addFunctionOutputToDependency(fn: Term, predicate: Term, composedOf: Term) {
-      if (!dependencyMeta[fn.value].outputs[predicate.value]) {
-        dependencyMeta[fn.value].outputs[predicate.value] = [];
+    function addFunctionOutputToDependency(dependencyFunction: DependencyFunction, predicate: Term, composedOf: Term,) {
+      if (!dependencyFunction.outputs[predicate.value]) {
+        dependencyFunction.outputs[predicate.value] = [];
       }
-      dependencyMeta[fn.value].outputs[predicate.value].push(composedOf.value);
+      dependencyFunction.outputs[predicate.value].push(composedOf.value);
     }
 
     function tryAddFunctionToDependency(fn: Term, rootFn: Term) {
@@ -392,7 +404,7 @@ export class FunctionHandler {
         dependencyMap[fn.value] = [`${fn.value}_inputs`];
         dependencyMeta[fn.value] = {
           type: 'function',
-          fn: rootFn,
+          fn: new Function(rootFn),
           inputs: {},
           outputs: {},
         };

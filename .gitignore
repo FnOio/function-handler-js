@@ -4,5 +4,7 @@ functionhub_implementations/
 function-handler-js.iml
 
 .idea/
+.vscode/
 
 dist/
+resources/phpgeo/

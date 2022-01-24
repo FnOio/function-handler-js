@@ -7,16 +7,16 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 function readFile(path) {
-  return fs.readFileSync(path, { encoding:'utf-8' });
+  return fs.readFileSync(path, { encoding: 'utf-8' });
 }
 
-const dirResources = path.join('src', 'resources');
-const fnTtl = readFile(path.join(dirResources, 'sum.ttl'));
-const fnTtlComposition = readFile(path.join(dirResources, 'sum-composition.ttl'));
+const dirResources = path.resolve(__dirname, '../resources');
+const fnTtl = readFile(path.resolve(dirResources, 'sum.ttl'));
+const fnTtlComposition = readFile(path.resolve(dirResources, 'sum-composition.ttl'));
 
 describe('FunctionHandler tests', () => { // the tests container
 
-  it.skip('can parse a function file', async () => { // the single test
+  it('can parse a function file', async () => { // the single test
     const handler = new FunctionHandler();
     await handler.addFunctionResource('http://users.ugent.be/~bjdmeest/function/grel.ttl#');
 
@@ -39,10 +39,7 @@ describe('FunctionHandler tests', () => { // the tests container
     expect(fn.id).to.equal(`${prefixes.fns}sum`);
 
     const jsHandler = new JavaScriptHandler();
-    handler.implementationHandler
-      .loadImplementation(`${prefixes.fns}sumImplementation`,
-                          jsHandler,
-                          { fn: (a, b) => a + b });
+    handler.implementationHandler.loadImplementation(`${prefixes.fns}sumImplementation`, jsHandler, { fn: (a, b) => a + b });
     const result = await handler.executeFunction(fn, {
       [`${prefixes.fns}a`]: 1,
       [`${prefixes.fns}b`]: 2,
@@ -66,10 +63,7 @@ describe('FunctionHandler tests', () => { // the tests container
     expect(fn.id).to.equal(`${prefixes.fns}sum3`);
 
     const jsHandler = new JavaScriptHandler();
-    handler.implementationHandler
-      .loadImplementation(`${prefixes.fns}sumImplementation`,
-                          jsHandler,
-                          { fn: (a, b) => a + b });
+    handler.implementationHandler.loadImplementation(`${prefixes.fns}sumImplementation`, jsHandler, { fn: (a, b) => a + b });
     const result = await handler.executeFunction(fn, {
       [`${prefixes.fns}a`]: 1,
       [`${prefixes.fns}b`]: 2,
@@ -92,16 +86,11 @@ describe('FunctionHandler tests', () => { // the tests container
     expect(fn.id).to.equal(`${prefixes.fns}sum3`);
     const jsHandler = new JavaScriptHandler();
     const iriSumImplementation = `${prefixes.fns}sumImplementation`;
-    handler.implementationHandler
-      .loadImplementation(iriSumImplementation,
-                          jsHandler,
-                          { fn: (a, b) => a + b });
+    handler.implementationHandler.loadImplementation(iriSumImplementation, jsHandler, { fn: (a, b) => a + b });
 
     // This call is needed for the implementationHandler to update its loadedImplementations
     handler.getHandlerViaCompositions(fn);
-    const loadedSumImplementation = handler.implementationHandler
-      .loadedImplementations[iriSumImplementation];
-    // TODO: @BDM, here's the id()-problem
+    const loadedSumImplementation = handler.implementationHandler.getImplementation(iriSumImplementation);
     expect(loadedSumImplementation.fnId).not.to.be.an('function');
     const result = await handler.executeFunction(fn, {
       [`${prefixes.fns}a`]: 1,
@@ -118,11 +107,9 @@ describe('Workflow', () => {
   const dirWorkflowResources = path.join(dirResources, 'workflow');
   const ttlParametersAndOutputs = readFile(path.join(dirWorkflowResources, 'parameters-and-outputs.ttl'));
   // Map functionLabel on turtle file
-  const labelOnTtlFile = Object
-    .fromEntries(['functionA', 'functionB', 'functionC']
-                   .map((x) => {
-                     return [x, readFile(path.join(dirWorkflowResources, `${x}.ttl`))];
-                   }));
+  const labelOnTtlFile = Object.fromEntries(['functionA', 'functionB', 'functionC'].map((x) => {
+    return [x, readFile(path.join(dirWorkflowResources, `${x}.ttl`))];
+  }));
 
   const loadParametersAndOutputsGraph = async () => {
     // Add parameters and outputs graph
@@ -130,22 +117,21 @@ describe('Workflow', () => {
       `${prefixes.fns}ParamsAndOutputs`,
       {
         type: 'string',
-        contents:  ttlParametersAndOutputs,
+        contents: ttlParametersAndOutputs,
         contentType: 'text/turtle',
       });
   };
-  const loadFunctionResource =  (iri, contents) => {
-    return handler.addFunctionResource(iri, // tslint:disable-next-line:align
+  const loadFunctionResource = (iri: string, contents: any) => {
+    return handler.addFunctionResource(iri,
       {
         contents,
-        type:'string',
-        contentType:'text/turtle',
+        type: 'string',
+        contentType: 'text/turtle',
       });
   };
   const loadFunctionGraphs = async () => {
     // Add function graphs
-    await Promise.all(Object.entries(labelOnTtlFile)
-                        .map(([lbl, ttl]) => loadFunctionResource(`${prefixes.fns}${lbl}`, ttl)));
+    await Promise.all(Object.entries(labelOnTtlFile).map(([lbl, ttl]) => loadFunctionResource(`${prefixes.fns}${lbl}`, ttl)));
   };
   // Before the first test
   before(async () => {
@@ -173,15 +159,9 @@ describe('Workflow', () => {
     };
     // Load JS implementations
     const jsHandler = new JavaScriptHandler();
-    Object.entries(functionJavaScriptImplementations)
-      .forEach(([lbl, fn]) => {
-        handler.implementationHandler
-          .loadImplementation(
-            `${prefixes.fns}${lbl}Implementation`,
-            jsHandler,
-            { fn },
-          );
-      });
+    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
+      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn },);
+    });
 
     const resultA = await handler.executeFunction(fnA, { [`${prefixes.fns}str0`]: 1 });
     const resultB = await handler.executeFunction(fnB, { [`${prefixes.fns}str0`]: 2 });
@@ -194,10 +174,9 @@ describe('Workflow', () => {
     return;
   });
   //
-  it.skip('Test composition AB', async () => {
+  it('Test composition AB', async () => {
     // load composition resources
-    await loadFunctionResource(`${prefixes.fns}compositionAB`,
-                               readFile('src/resources/workflow/compositionAB.ttl'));
+    await loadFunctionResource(`${prefixes.fns}compositionAB`, readFile(path.resolve(dirResources, 'workflow/compositionAB.ttl')));
     // function objects
     const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
     const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
@@ -218,21 +197,11 @@ describe('Workflow', () => {
     };
     // Load JS implementations
     const jsHandler = new JavaScriptHandler();
-    Object.entries(functionJavaScriptImplementations)
-      .forEach(([lbl, fn]) => {
-        handler.implementationHandler
-          .loadImplementation(
-            `${prefixes.fns}${lbl}Implementation`,
-            jsHandler,
-            { fn },
-          );
-      });
+    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
+      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn },);
+    });
 
     const resultAB = await handler.executeFunction(fnAB, { [`${prefixes.fns}str0`]: 1 });
-    // TODO: the result is incorrect.
-    // expected: 'B(A(1))'
-    // actual: 'A(A(1))'
-    console.log(resultAB);
     expect(resultAB[`${prefixes.fns}out`]).to.equal('B(A(1))');
     return;
   });

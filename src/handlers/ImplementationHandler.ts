@@ -1,45 +1,55 @@
 import { ArgumentMap, Handler } from './Handler';
 import { CompositionHandler } from './CompositionHandler';
 
-export class ImplementationHandler {
-  loadedImplementations: {
-    [implementationId: string]: {
-      fnId?: string,
-      handler: Handler,
-      options: any,
-    },
-  };
+type InternalImplementation = {
+  fnId?: string,
+  handler: Handler,
+  options: any,
+}
 
-  compositionHandler: CompositionHandler;
+export class ImplementationHandler {
+  private _loadedImplementations: {
+    [implementationId: string]: InternalImplementation,
+  };
+  private _compositionHandler: CompositionHandler;
+
   constructor() {
-    this.loadedImplementations = {};
-    this.compositionHandler = new CompositionHandler();
+    this._loadedImplementations = {};
+    this._compositionHandler = new CompositionHandler();
   }
 
   loadImplementation(implementationId: string, handler: Handler, options: any = null): void {
-    this.loadedImplementations[implementationId] = { options, handler };
+    this._loadedImplementations[implementationId] = { options, handler };
   }
 
-    // TODO what if same implementation for multiple functions?
+  loadComposition(implementationId: string, options: any = null): void {
+    this._loadedImplementations[implementationId] = { options, handler: this._compositionHandler };
+  }
+
+  // TODO what if same implementation for multiple functions?
   setOptions(implementationId: string, options: any) {
-    if (!this.loadedImplementations[implementationId]) {
+    if (!this._loadedImplementations[implementationId]) {
       return false;
     }
-    this.loadedImplementations[implementationId].options = Object.assign(
-      this.loadedImplementations[implementationId].options, options);
+    this._loadedImplementations[implementationId].options = Object.assign(
+      this._loadedImplementations[implementationId].options, options);
     return true;
   }
 
   linkImplementationToFunction(implementationId: string, fnId: string): boolean {
-    if (!this.loadedImplementations[implementationId]) {
+    if (!this._loadedImplementations[implementationId]) {
       return false;
     }
-    this.loadedImplementations[implementationId].fnId = fnId;
+    this._loadedImplementations[implementationId].fnId = fnId;
     return true;
   }
 
   hasImplementation(implementationId: string): boolean {
-    return this.loadedImplementations[implementationId] !== undefined;
+    return this._loadedImplementations[implementationId] !== undefined;
+  }
+
+  getImplementation(implementationId: string): InternalImplementation {
+    return this._loadedImplementations[implementationId];
   }
 
   hasImplementationForFunction(fnId: string): boolean {
@@ -47,16 +57,14 @@ export class ImplementationHandler {
   }
 
   getImplementations(fnId: string): string[] {
-    const out = Object.keys(this.loadedImplementations)
-      .filter((implementationId) => {
-        return this.loadedImplementations[implementationId].fnId === fnId
-          && this.loadedImplementations[implementationId].handler;
-      });
+    const out = Object.keys(this._loadedImplementations).filter((implementationId) => {
+      return this._loadedImplementations[implementationId].fnId === fnId
+        && this._loadedImplementations[implementationId].handler;
+    });
     return out;
   }
 
   async executeImplementation(implementationId: string, args: ArgumentMap) {
-    return this.loadedImplementations[implementationId]
-      .handler.executeFunction(args, this.loadedImplementations[implementationId].options);
+    return this._loadedImplementations[implementationId].handler.executeFunction(args, this._loadedImplementations[implementationId].options);
   }
 }
