@@ -81,7 +81,7 @@ export class FunctionHandler {
     return null;
   }
 
-  private getHandlerViaCompositions(fn: Function): Composition | null {
+  getHandlerViaCompositions(fn: Function): Composition | null {
     const compositions: Composition[] = this.getCompositionsFromFunction(fn);
     if (compositions.length === 0) {
       console.warn(`Could not find any relevant composition for function ${fn.id}`);

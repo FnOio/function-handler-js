@@ -79,6 +79,38 @@ describe('FunctionHandler tests', () => { // the tests container
     expect(result[`${prefixes.fns}out`]).to.equal(6);
     return;
   });
+
+  it('Function id should not be a function', async () => {
+    const handler = new FunctionHandler();
+    await handler.addFunctionResource(`${prefixes.fns}sum3`, {
+      type: 'string',
+      contents: fnTtl + fnTtlComposition,
+      contentType: 'text/turtle',
+    });
+    const fn = await handler.getFunction(`${prefixes.fns}sum3`);
+    expect(fn).to.be.not.null;
+    expect(fn.id).to.equal(`${prefixes.fns}sum3`);
+    const jsHandler = new JavaScriptHandler();
+    const iriSumImplementation = `${prefixes.fns}sumImplementation`;
+    handler.implementationHandler
+      .loadImplementation(iriSumImplementation,
+                          jsHandler,
+                          { fn: (a, b) => a + b });
+
+    // This call is needed for the implementationHandler to update its loadedImplementations
+    handler.getHandlerViaCompositions(fn);
+    const loadedSumImplementation = handler.implementationHandler
+      .loadedImplementations[iriSumImplementation];
+    // TODO: @BDM, here's the id()-problem
+    expect(loadedSumImplementation.fnId).not.to.be.an('function');
+    const result = await handler.executeFunction(fn, {
+      [`${prefixes.fns}a`]: 1,
+      [`${prefixes.fns}b`]: 2,
+      [`${prefixes.fns}c`]: 3,
+    });
+    expect(result[`${prefixes.fns}out`]).to.equal(6);
+    return;
+  });
 });
 
 describe('Workflow', () => {
