@@ -3,14 +3,16 @@ import { FunctionHandler } from './FunctionHandler';
 import { } from 'mocha';
 import { JavaScriptHandler } from './handlers/JavaScriptHandler';
 import prefixes from './prefixes';
-const fs = require('fs');
+import * as fs from 'fs';
+import * as path from 'path';
 
 function readFile(path) {
   return fs.readFileSync(path, { encoding:'utf-8' });
 }
-const fnTtl = readFile('src/resources/sum.ttl');
 
-const fnTtlComposition = readFile('src/resources/sum-composition.ttl');
+const dirResources = path.join('src', 'resources');
+const fnTtl = readFile(path.join(dirResources, 'sum.ttl'));
+const fnTtlComposition = readFile(path.join(dirResources, 'sum-composition.ttl'));
 
 describe('FunctionHandler tests', () => { // the tests container
 
@@ -81,12 +83,13 @@ describe('FunctionHandler tests', () => { // the tests container
 
 describe('Workflow', () => {
   const handler = new FunctionHandler();
-  const ttlParametersAndOutputs = readFile('src/resources/wf/parameters-and-outputs.ttl');
+  const dirWorkflowResources = path.join(dirResources, 'workflow');
+  const ttlParametersAndOutputs = readFile(path.join(dirWorkflowResources, 'parameters-and-outputs.ttl'));
   // Map functionLabel on turtle file
   const labelOnTtlFile = Object
     .fromEntries(['functionA', 'functionB', 'functionC']
                    .map((x) => {
-                     return [x, readFile(`src/resources/wf/${x}.ttl`)];
+                     return [x, readFile(path.join(dirWorkflowResources, `${x}.ttl`))];
                    }));
 
   const loadParametersAndOutputsGraph = async () => {
@@ -159,10 +162,10 @@ describe('Workflow', () => {
     return;
   });
   //
-  it('Test composition AB', async () => {
+  it.skip('Test composition AB', async () => {
     // load composition resources
     await loadFunctionResource(`${prefixes.fns}compositionAB`,
-                               readFile('src/resources/wf/compositionAB.ttl'));
+                               readFile('src/resources/workflow/compositionAB.ttl'));
     // function objects
     const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
     const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
