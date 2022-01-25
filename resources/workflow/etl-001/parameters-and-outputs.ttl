@@ -1,0 +1,45 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex: <http://www.example.com#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fns: <http://example.com/functions#> .
+@prefix fnoc: <https://w3id.org/function/vocabulary/composition#> .
+@prefix skos:     <http://www.w3.org/2004/02/skos/core#> .
+
+################################################################################
+# Input parameters
+
+fns:iriParameter
+    a fno:Parameter ;
+    rdfs:label "IRI parameter 0"@en ;
+    fno:predicate fns:iri ;
+    fno:type xsd:anyURI ;
+    fno:required "true"^^xsd:boolean
+.
+
+fns:iriParameterMapping
+    a fno:ParameterMapping, fnom:PositionParameterMapping ;
+    fnom:functionParameter fns:iriParameter ;
+    fnom:implementationParameterPosition "0"^^xsd:integer 
+.
+
+################################################################################
+# Output parameters
+
+fns:iriOutput
+    a             fno:Output ;
+    fno:name      "IRI output" ;
+    rdfs:label    "IRI output" ;
+    fno:predicate fns:out ;
+    fno:type xsd:anyURI
+.
+
+fns:iriOutputMapping 
+    a fno:ReturnMapping, fnom:DefaultReturnMapping ;
+    fnom:functionOutput fns:iriOutput 
+.

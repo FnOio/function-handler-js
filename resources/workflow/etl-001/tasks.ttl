@@ -10,8 +10,8 @@
 fns:executeRMLMapper
     a fno:Function ;
     dcterms:description "Executes RMLMapper"@en ;
-    fno:expects ( fns:str0Parameter ) ;
-    fno:returns ( fns:strOutput )
+    fno:expects ( fns:iriParameter ) ;
+    fno:returns ( fns:iriOutput )
 .
 
 fns:executeRMLMapperImplementation
@@ -27,8 +27,8 @@ fns:executeRMLMapperMapping
     a fno:Mapping ;
     fno:function fns:executeRMLMapper ;
     fno:implementation fns:executeRMLMapperImplementation ;
-    fno:parameterMapping fns:str0ParameterMapping ;
-    fno:returnMapping fns:strOutputMapping ;
+    fno:parameterMapping fns:iriParameterMapping ;
+    fno:returnMapping fns:iriOutputMapping ;
     fno:methodMapping fns:executeRMLMapperMethodMapping 
 .
 
@@ -38,8 +38,8 @@ fns:executeRMLMapperMapping
 fns:publish
     a fno:Function ;
     dcterms:description "Publishes RDF to SPARQL endpoint"@en ;
-    fno:expects ( fns:str0Parameter ) ;
-    fno:returns ( fns:strOutput )
+    fno:expects ( fns:iriParameter ) ;
+    fno:returns ( fns:iriOutput )
 .
 
 fns:publishImplementation
@@ -55,7 +55,7 @@ fns:publishMapping
     a fno:Mapping ;
     fno:function fns:publish ;
     fno:implementation fns:publishImplementation ;
-    fno:parameterMapping fns:str0ParameterMapping ;
-    fno:returnMapping fns:strOutputMapping ;
+    fno:parameterMapping fns:iriParameterMapping ;
+    fno:returnMapping fns:iriOutputMapping ;
     fno:methodMapping fns:publishMethodMapping 
 .

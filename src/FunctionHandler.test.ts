@@ -223,7 +223,7 @@ describe('Workflow', () => {
 
   it.only('Test etl-001', async () => {
     // load composition resources
-    await loadParametersAndOutputsGraph();
+    await loadFunctionResource(`${prefixes.fns}ParamsAndOutputs`, readFile(path.resolve(dirResources, 'workflow/etl-001/parameters-and-outputs.ttl')));
     console.log('loaded parameters and outputs: √');
     // note: tasks in etl-001 use default parameters and outputs graph
     await loadFunctionResource(`${prefixes.fns}tasks`, readFile(path.resolve(dirResources, 'workflow/etl-001/tasks.ttl')));
@@ -249,10 +249,9 @@ describe('Workflow', () => {
     Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
       handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn });
     });
+    const refArg0 = `${prefixes.fns}iri`;
     // Execute composition
-    const resultETL = await handler.executeFunction(fnETL, { [`${prefixes.fns}str0`]: 'http://input.be' });
+    const resultETL = await handler.executeFunction(fnETL, { [refArg0]: 'http://input.be' });
     console.log('result ETL: ', resultETL);
-    // const resultAB = await handler.executeFunction(fnAB, { [`${prefixes.fns}str0`]: 1 });
-    // expect(resultAB[`${prefixes.fns}out`]).to.equal('B(A(1))');
   });
 });

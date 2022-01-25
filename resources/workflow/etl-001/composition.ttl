@@ -8,8 +8,8 @@
 fns:ETL
     a fno:Function ;
     dcterms:description "ETL 001"@en ;
-    fno:expects ( fns:str0Parameter ) ;
-    fno:returns ( fns:strOutput )
+    fno:expects ( fns:iriParameter ) ;
+    fno:returns ( fns:iriOutput )
 .
 
 
@@ -19,31 +19,31 @@ fns:ETLComposition
     fnoc:composedOf [
         fnoc:mapFrom [
             fnoc:constituentFunction fns:ETL;
-            fnoc:functionParameter fns:str0Parameter 
+            fnoc:functionParameter fns:iriParameter 
         ] ;
         fnoc:mapTo [
             fnoc:constituentFunction fns:executeRMLMapper;
-            fnoc:functionParameter fns:str0Parameter
+            fnoc:functionParameter fns:iriParameter
         ] 
     ],
     [
         fnoc:mapFrom [
             fnoc:constituentFunction fns:executeRMLMapper;
-            fnoc:functionOutput fns:strOutput 
+            fnoc:functionOutput fns:iriOutput 
         ] ;
         fnoc:mapTo [
             fnoc:constituentFunction fns:publish;
-            fnoc:functionParameter fns:str0Parameter
+            fnoc:functionParameter fns:iriParameter
         ] 
     ],
     [
         fnoc:mapFrom [
             fnoc:constituentFunction fns:publish;
-            fnoc:functionOutput fns:strOutput 
+            fnoc:functionOutput fns:iriOutput 
         ] ;
         fnoc:mapTo [
             fnoc:constituentFunction fns:ETL;
-            fnoc:functionOutput fns:strOutput
+            fnoc:functionOutput fns:iriOutput
         ] 
     ]
 .
