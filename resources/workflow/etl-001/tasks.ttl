@@ -1,0 +1,61 @@
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fns: <http://example.com/functions#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+################################################################################
+# TASK
+
+fns:executeRMLMapper
+    a fno:Function ;
+    dcterms:description "Executes RMLMapper"@en ;
+    fno:expects ( fns:str0Parameter ) ;
+    fno:returns ( fns:strOutput )
+.
+
+fns:executeRMLMapperImplementation
+    a fno:Implementation, fnoi:JavaScriptImplementation, fnoi:JavaScriptFunction ;
+.
+
+fns:executeRMLMapperMethodMapping 
+    a fno:MethodMapping, fnom:StringMethodMapping ;
+    fnom:method-name "executeRMLMapper" 
+.
+
+fns:executeRMLMapperMapping 
+    a fno:Mapping ;
+    fno:function fns:executeRMLMapper ;
+    fno:implementation fns:executeRMLMapperImplementation ;
+    fno:parameterMapping fns:str0ParameterMapping ;
+    fno:returnMapping fns:strOutputMapping ;
+    fno:methodMapping fns:executeRMLMapperMethodMapping 
+.
+
+################################################################################
+# TASK
+
+fns:publish
+    a fno:Function ;
+    dcterms:description "Publishes RDF to SPARQL endpoint"@en ;
+    fno:expects ( fns:str0Parameter ) ;
+    fno:returns ( fns:strOutput )
+.
+
+fns:publishImplementation
+    a fno:Implementation, fnoi:JavaScriptImplementation, fnoi:JavaScriptFunction ;
+.
+
+fns:publishMethodMapping 
+    a fno:MethodMapping, fnom:StringMethodMapping ;
+    fnom:method-name "publish" 
+.
+
+fns:publishMapping 
+    a fno:Mapping ;
+    fno:function fns:publish ;
+    fno:implementation fns:publishImplementation ;
+    fno:parameterMapping fns:str0ParameterMapping ;
+    fno:returnMapping fns:strOutputMapping ;
+    fno:methodMapping fns:publishMethodMapping 
+.

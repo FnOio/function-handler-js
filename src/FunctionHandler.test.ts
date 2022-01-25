@@ -220,5 +220,39 @@ describe('Workflow', () => {
     const resultAB = await handler.executeFunction(fnAB, { [`${prefixes.fns}str0`]: 1 });
     expect(resultAB[`${prefixes.fns}out`]).to.equal('B(A(1))');
   });
+
+  it.only('Test etl-001', async () => {
+    // load composition resources
+    await loadParametersAndOutputsGraph();
+    console.log('loaded parameters and outputs: √');
+    // note: tasks in etl-001 use default parameters and outputs graph
+    await loadFunctionResource(`${prefixes.fns}tasks`, readFile(path.resolve(dirResources, 'workflow/etl-001/tasks.ttl')));
+    console.log('loaded tasks: √');
+    await loadFunctionResource(`${prefixes.fns}ETL001`, readFile(path.resolve(dirResources, 'workflow/etl-001/composition.ttl')));
+    console.log('loaded composition: √');
+    // function objects
+    const fnExecuteRMLMapper = await handler.getFunction(`${prefixes.fns}executeRMLMapper`);
+    const fnPublish = await handler.getFunction(`${prefixes.fns}publish`);
+    const taskFunctions = [fnExecuteRMLMapper, fnPublish];
+    taskFunctions.forEach(minimalFunctionTests);
+    console.log('taskFunctions passed minimal function tests √');
+    // Workflow Composition function
+    const fnETL = await handler.getFunction(`${prefixes.fns}ETL`);
+    minimalFunctionTests(fnETL);
+    // Map function labels to JS implementations
+    const functionJavaScriptImplementations = {
+      executeRMLMapper: (x) => `executeRMLMapper(${x})`,
+      publish: (x) => `publish(${x})`,
+    };
+    // Load JS implementations
+    const jsHandler = new JavaScriptHandler();
+    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
+      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn });
+    });
+    // Execute composition
+    const resultETL = await handler.executeFunction(fnETL, { [`${prefixes.fns}str0`]: 'http://input.be' });
+    console.log('result ETL: ', resultETL);
+    // const resultAB = await handler.executeFunction(fnAB, { [`${prefixes.fns}str0`]: 1 });
+    // expect(resultAB[`${prefixes.fns}out`]).to.equal('B(A(1))');
   });
 });
