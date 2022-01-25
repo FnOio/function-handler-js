@@ -15,7 +15,6 @@ const fnTtl = readFile(path.resolve(dirResources, 'sum.ttl'));
 const fnTtlComposition = readFile(path.resolve(dirResources, 'sum-composition.ttl'));
 
 describe('FunctionHandler tests', () => { // the tests container
-
   it('can parse a function file', async () => { // the single test
     const handler = new FunctionHandler();
     await handler.addFunctionResource('http://users.ugent.be/~bjdmeest/function/grel.ttl#');
@@ -46,7 +45,6 @@ describe('FunctionHandler tests', () => { // the tests container
     });
 
     expect(result[`${prefixes.fns}out`]).to.equal(3);
-    return;
   });
 
   it('can load a local file, add a handler, compose, and execute a function', async () => {
@@ -71,7 +69,6 @@ describe('FunctionHandler tests', () => { // the tests container
     });
 
     expect(result[`${prefixes.fns}out`]).to.equal(6);
-    return;
   });
 
   it('Function id should not be a function', async () => {
@@ -98,7 +95,6 @@ describe('FunctionHandler tests', () => { // the tests container
       [`${prefixes.fns}c`]: 3,
     });
     expect(result[`${prefixes.fns}out`]).to.equal(6);
-    return;
   });
 });
 
@@ -107,9 +103,7 @@ describe('Workflow', () => {
   const dirWorkflowResources = path.join(dirResources, 'workflow');
   const ttlParametersAndOutputs = readFile(path.join(dirWorkflowResources, 'parameters-and-outputs.ttl'));
   // Map functionLabel on turtle file
-  const labelOnTtlFile = Object.fromEntries(['functionA', 'functionB', 'functionC'].map((x) => {
-    return [x, readFile(path.join(dirWorkflowResources, `${x}.ttl`))];
-  }));
+  const labelOnTtlFile = Object.fromEntries(['functionA', 'functionB', 'functionC'].map((x) => [x, readFile(path.join(dirWorkflowResources, `${x}.ttl`))]));
 
   const loadParametersAndOutputsGraph = async () => {
     // Add parameters and outputs graph
@@ -119,19 +113,24 @@ describe('Workflow', () => {
         type: 'string',
         contents: ttlParametersAndOutputs,
         contentType: 'text/turtle',
-      });
+      },
+    );
   };
-  const loadFunctionResource = (iri: string, contents: any) => {
-    return handler.addFunctionResource(iri,
-      {
-        contents,
-        type: 'string',
-        contentType: 'text/turtle',
-      });
-  };
+  const loadFunctionResource = (iri: string, contents: any) => handler.addFunctionResource(
+    iri,
+    {
+      contents,
+      type: 'string',
+      contentType: 'text/turtle',
+    },
+  );
   const loadFunctionGraphs = async () => {
     // Add function graphs
     await Promise.all(Object.entries(labelOnTtlFile).map(([lbl, ttl]) => loadFunctionResource(`${prefixes.fns}${lbl}`, ttl)));
+  };
+  const minimalFunctionTests = (f) => {
+    expect(f).not.to.be.null;
+    expect(f.id).not.to.be.null;
   };
   // Before the first test
   before(async () => {
@@ -146,21 +145,17 @@ describe('Workflow', () => {
     const fnC = await handler.getFunction(`${prefixes.fns}functionC`);
     const functionArray = [fnA, fnB, fnC];
     // Minimal tests that every function must pass
-    const minimalFunctionTests = (f) => {
-      expect(f).not.to.be.null;
-      expect(f.id).not.to.be.null;
-    };
     functionArray.forEach(minimalFunctionTests);
     // Map function labels to JS implementations
     const functionJavaScriptImplementations = {
-      functionA: x => `A(${x})`,
-      functionB: x => `B(${x})`,
-      functionC: x => `C(${x})`,
+      functionA: (x) => `A(${x})`,
+      functionB: (x) => `B(${x})`,
+      functionC: (x) => `C(${x})`,
     };
     // Load JS implementations
     const jsHandler = new JavaScriptHandler();
     Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
-      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn },);
+      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn });
     });
 
     const resultA = await handler.executeFunction(fnA, { [`${prefixes.fns}str0`]: 1 });
@@ -170,8 +165,6 @@ describe('Workflow', () => {
     expect(resultA[`${prefixes.fns}out`]).to.equal('A(1)');
     expect(resultB[`${prefixes.fns}out`]).to.equal('B(2)');
     expect(resultC[`${prefixes.fns}out`]).to.equal('C(3)');
-
-    return;
   });
   //
   it('Test composition AB', async () => {
