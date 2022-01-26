@@ -258,4 +258,86 @@ describe('Workflow', () => {
     const resultETL = await handler.executeFunction(fnETL, { [refArg0]: 'http://input.be' });
     console.log('result ETL: ', resultETL);
   });
+
+  it.only('Runs posh-001', async () => {
+    const dirName = 'posh-001';
+    const caseDir = path.resolve(dirResources, 'workflow', dirName);
+    const setupCase = async (caseDir) => {
+      console.log('setting up case: ' , caseDir)
+      // load composition resources
+      await loadFunctionResource(`${prefixes.fns}paramsAndOutputs`, readFile(path.resolve(caseDir, 'parameters-and-outputs.ttl')));
+      console.log('loaded parameters and outputs: √');
+      // note: tasks in etl-001 use default parameters and outputs graph
+      await loadFunctionResource(`${prefixes.fns}tasks`, readFile(path.resolve(caseDir, 'tasks.ttl')));
+      console.log('loaded tasks: √');
+      await loadFunctionResource(`${prefixes.fns}composition`, readFile(path.resolve(caseDir, 'composition.ttl')));
+      console.log('loaded composition: √');
+    };
+    //
+    await setupCase(caseDir);
+    // function objects
+    const fnExecuteRMLMapper = await handler.getFunction(`${prefixes.fns}executeRMLMapper`);
+    const fnPublish = await handler.getFunction(`${prefixes.fns}publish`);
+    const taskFunctions = [fnExecuteRMLMapper, fnPublish];
+    taskFunctions.forEach(minimalFunctionTests);
+    console.log('taskFunctions passed minimal function tests √');
+    //
+    const functionJavaScriptImplementations = {
+      executeRMLMapper: async (...args) => {
+        console.log(`executeRMLMapper(${args})`);
+        let [
+          fpathMapping, fpathOutput, fpathRMLMapperJar, fpathRMLMapperTempFolder, sources
+        ] = args;
+        console.log('❯ args')
+        console.log(args)
+        // Import RMLMapper wrapper
+        const RMLMapperWrapper = require('@rmlio/rmlmapper-java-wrapper');
+        // Read mapping
+        const mapping = fs.readFileSync(fpathMapping, { encoding: 'utf-8' });
+        if (!mapping) throw Error('Mapping is undefined');
+        console.log('➜ read rmlmapping')
+        // Initialize RMLMapperWrapper
+        // TODO: support removeTempFolders & javaVMOptions arguments
+        const wrapper = new RMLMapperWrapper(fpathRMLMapperJar, fpathRMLMapperTempFolder, true);
+        // Execute RML Mapper
+        try {
+          console.log('➜ Executing RMLMapper!!! 🧨');
+          const result = await wrapper.execute(mapping, {
+            sources,
+            generateMetadata: false, serialization: 'turtle' });
+          const { output } = result;
+          console.log('➜ writing output to: ' , fpathOutput);
+          writeFile(fpathOutput, output);
+        } catch (error) {
+          console.log('error while executing rmlmapper 😫');
+          console.log(error);
+        }
+
+        return fpathOutput;
+      },
+      publish: (x) => new Error('TODO')
+    };
+    // Load JS implementations
+    const jsHandler = new JavaScriptHandler();
+    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
+      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn });
+    });
+    // Helpers
+    const _fns = (x) => `${prefixes.fns}${x}`;
+    const _resolve = (...parts) => path.resolve(caseDir, ...parts);
+    // Arg map
+    const fnExecuteRMLMapperArgMap = {
+      [_fns('fpathMapping')]: _resolve('mapping.ttl'),
+      [_fns('fpathOutput')]: _resolve('out.ttl'),
+      [_fns('fpathRMLMapperJar')]: _resolve('..', '..', '..', 'rmlmapper.jar'),
+      [_fns('fpathRMLMapperTempFolder')]: _resolve('temp'),
+      [_fns('sources')]: {
+        'input.csv': readFile(_resolve('input.csv')),
+      },
+    };
+    // Execute
+    const fnExecuteRMLMapperResult = await handler.executeFunction(fnExecuteRMLMapper,fnExecuteRMLMapperArgMap);
+    console.log('fnExecuteRMLMapperResult result:');
+    console.log(fnExecuteRMLMapperResult);
+  });
 });

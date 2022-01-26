@@ -1,0 +1,68 @@
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fns: <http://example.com/functions#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+################################################################################
+# TASK
+
+fns:executeRMLMapper
+    a fno:Function ;
+    dcterms:description "Executes RMLMapper"@en ;
+    fno:expects ( fns:fpathMappingParameter fns:fpathOutputParameter fns:fpathRMLMapperJarParameter fns:fpathRMLMapperTempFolderParameter fns:sourcesParameter ) ;
+    fno:returns ( fns:returnOutput )
+.
+
+fns:executeRMLMapperImplementation
+    a fno:Implementation, fnoi:JavaScriptImplementation, fnoi:JavaScriptFunction ;
+.
+
+fns:executeRMLMapperMethodMapping
+    a fno:MethodMapping, fnom:StringMethodMapping ;
+    fnom:method-name "executeRMLMapper"
+.
+
+fns:executeRMLMapperMapping
+    a fno:Mapping ;
+    fno:function fns:executeRMLMapper ;
+    fno:implementation fns:executeRMLMapperImplementation ;
+
+    fno:parameterMapping fns:fpathMappingParameterMapping ;
+    fno:parameterMapping fns:fpathOutputParameterMapping ;
+    fno:parameterMapping fns:fpathRMLMapperJarParameterMapping ;
+    fno:parameterMapping fns:fpathRMLMapperTempFolderParameterMapping ;
+    fno:parameterMapping fns:sourcesParameterMapping ;
+    
+    fno:returnMapping fns:returnOutputMapping ;
+
+    fno:methodMapping fns:executeRMLMapperMethodMapping
+.
+
+################################################################################
+# TASK
+
+fns:publish
+    a fno:Function ;
+    dcterms:description "Publishes RDF to SPARQL endpoint"@en ;
+    fno:expects ( fns:iriParameter ) ;
+    fno:returns ( fns:iriOutput )
+.
+
+fns:publishImplementation
+    a fno:Implementation, fnoi:JavaScriptImplementation, fnoi:JavaScriptFunction ;
+.
+
+fns:publishMethodMapping
+    a fno:MethodMapping, fnom:StringMethodMapping ;
+    fnom:method-name "publish"
+.
+
+fns:publishMapping
+    a fno:Mapping ;
+    fno:function fns:publish ;
+    fno:implementation fns:publishImplementation ;
+    fno:parameterMapping fns:iriParameterMapping ;
+    fno:returnMapping fns:iriOutputMapping ;
+    fno:methodMapping fns:publishMethodMapping
+.

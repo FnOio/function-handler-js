@@ -1,0 +1,119 @@
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnoc: <https://w3id.org/function/vocabulary/composition#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fns: <http://example.com/functions#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+fns:ETL
+    a fno:Function ;
+    dcterms:description "ETL 001"@en ;
+    #fno:expects ( fns:iriParameter ) ;
+    fno:expects ( fns:fpathMappingParameter fns:fpathOutputParameter fns:fpathRMLMapperJarParameter fns:fpathRMLMapperTempFolderParameter fns:sourcesParameter ) ;
+    fno:returns ( fns:returnOutput )
+.
+
+fns:ETLComposition
+    a fnoc:Composition;
+    #
+    fnoc:composedOf [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:ETL;
+            fnoc:functionParameter fns:fpathMappingParameter 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:executeRMLMapper;
+            fnoc:functionParameter fns:fpathMappingParameter
+        ] 
+    ],
+
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:ETL;
+            fnoc:functionParameter fns:fpathOutputParameter 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:executeRMLMapper;
+            fnoc:functionParameter fns:fpathOutputParameter
+        ] 
+    ],
+
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:ETL;
+            fnoc:functionParameter fns:fpathRMLMapperJarParameter 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:executeRMLMapper;
+            fnoc:functionParameter fns:fpathRMLMapperJarParameter
+        ] 
+    ],
+
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:ETL;
+            fnoc:functionParameter fns:fpathRMLMapperTempFolderParameter 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:executeRMLMapper;
+            fnoc:functionParameter fns:fpathRMLMapperTempFolderParameter
+        ] 
+    ],
+
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:ETL;
+            fnoc:functionParameter fns:sourcesParameter 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:executeRMLMapper;
+            fnoc:functionParameter fns:sourcesParameter
+        ] 
+    ],
+
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:executeRMLMapper;
+            fnoc:functionOutput fns:returnOutput 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:ETL;
+            fnoc:functionOutput fns:returnOutput
+        ] 
+    ]
+.
+
+# fns:ETLComposition
+#     a fnoc:Composition;
+#     #
+#     fnoc:composedOf [
+#         fnoc:mapFrom [
+#             fnoc:constituentFunction fns:ETL;
+#             fnoc:functionParameter fns:iriParameter 
+#         ] ;
+#         fnoc:mapTo [
+#             fnoc:constituentFunction fns:executeRMLMapper;
+#             fnoc:functionParameter fns:iriParameter
+#         ] 
+#     ],
+#     [
+#         fnoc:mapFrom [
+#             fnoc:constituentFunction fns:executeRMLMapper;
+#             fnoc:functionOutput fns:iriOutput 
+#         ] ;
+#         fnoc:mapTo [
+#             fnoc:constituentFunction fns:publish;
+#             fnoc:functionParameter fns:iriParameter
+#         ] 
+#     ],
+#     [
+#         fnoc:mapFrom [
+#             fnoc:constituentFunction fns:publish;
+#             fnoc:functionOutput fns:iriOutput 
+#         ] ;
+#         fnoc:mapTo [
+#             fnoc:constituentFunction fns:ETL;
+#             fnoc:functionOutput fns:iriOutput
+#         ] 
+#     ]
+# .

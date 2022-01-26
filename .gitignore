@@ -8,3 +8,5 @@ function-handler-js.iml
 
 dist/
 resources/phpgeo/
+
+*.jar

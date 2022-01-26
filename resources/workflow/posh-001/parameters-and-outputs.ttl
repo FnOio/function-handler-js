@@ -1,0 +1,59 @@
+@prefix ex: <http://www.example.com#> .
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fns: <http://example.com/functions#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+fns:fpathMappingParameterMapping a fno:ParameterMapping,
+        fnom:PositionParameterMapping ;
+    fnom:functionParameter fns:fpathMappingParameter ;
+    fnom:implementationParameterPosition 0 .
+
+fns:fpathOutputParameterMapping a fno:ParameterMapping,
+        fnom:PositionParameterMapping ;
+    fnom:functionParameter fns:fpathOutputParameter ;
+    fnom:implementationParameterPosition 1 .
+
+fns:fpathRMLMapperJarParameterMapping a fno:ParameterMapping,
+        fnom:PositionParameterMapping ;
+    fnom:functionParameter fns:fpathRMLMapperJarParameter ;
+    fnom:implementationParameterPosition 2 .
+
+fns:fpathRMLMapperTempFolderParameterMapping a fno:ParameterMapping,
+        fnom:PositionParameterMapping ;
+    fnom:functionParameter fns:fpathRMLMapperTempFolderParameter ;
+    fnom:implementationParameterPosition 3 .
+
+fns:returnOutputMapping a fnom:DefaultReturnMapping,
+        fno:ReturnMapping ;
+    fnom:functionOutput fns:returnOutput .
+
+fns:sourcesParameterMapping a fno:ParameterMapping,
+        fnom:PositionParameterMapping ;
+    fnom:functionParameter fns:sourcesParameter ;
+    fnom:implementationParameterPosition 4 .
+
+fns:fpathMappingParameter a fno:Parameter ;
+    fno:predicate fns:fpathMapping ;
+    fno:type xsd:anyURI .
+
+fns:fpathOutputParameter a fno:Parameter ;
+    fno:predicate fns:fpathOutput ;
+    fno:type xsd:anyURI .
+
+fns:fpathRMLMapperJarParameter a fno:Parameter ;
+    fno:predicate fns:fpathRMLMapperJar ;
+    fno:type xsd:anyURI .
+
+fns:fpathRMLMapperTempFolderParameter a fno:Parameter ;
+    fno:predicate fns:fpathRMLMapperTempFolder ;
+    fno:type xsd:anyURI .
+
+fns:returnOutput a fno:Output ;
+    fno:predicate fns:return ;
+    fno:type xsd:string .
+
+fns:sourcesParameter a fno:Parameter ;
+    fno:predicate fns:sources ;
+    fno:type ex:recordStringToAny .
+
