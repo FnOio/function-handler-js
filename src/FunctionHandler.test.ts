@@ -10,6 +10,10 @@ function readFile(path) {
   return fs.readFileSync(path, { encoding: 'utf-8' });
 }
 
+function writeFile(path, data) {
+  return fs.writeFileSync(path, data,{ encoding: 'utf-8' });
+}
+
 const dirResources = path.resolve(__dirname, '../resources');
 const fnTtl = readFile(path.resolve(dirResources, 'sum.ttl'));
 const fnTtlComposition = readFile(path.resolve(dirResources, 'sum-composition.ttl'));
