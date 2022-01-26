@@ -19,7 +19,7 @@ export class JavaScriptHandler extends Handler {
                 }
             }
         }
-        const fnResult = options.fn.apply(null, fnArgs);
+        const fnResult = await options.fn.apply(null, fnArgs);
         const result = {};
         if (options.returns['_default']) {
             result[options.returns['_default']] = fnResult;
