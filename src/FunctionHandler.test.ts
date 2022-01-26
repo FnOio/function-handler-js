@@ -335,9 +335,16 @@ describe('Workflow', () => {
         'input.csv': readFile(_resolve('input.csv')),
       },
     };
+
+    // Load composition
+    // Create argmap from its constituting function argmaps
+    const fnETLArgMap = { ...fnExecuteRMLMapperArgMap };
+    const fnETL = await handler.getFunction(`${prefixes.fns}ETL`);
+    minimalFunctionTests(fnETL);
+    console.log('fnETL passed minimal function tests √');
     // Execute
-    const fnExecuteRMLMapperResult = await handler.executeFunction(fnExecuteRMLMapper,fnExecuteRMLMapperArgMap);
-    console.log('fnExecuteRMLMapperResult result:');
-    console.log(fnExecuteRMLMapperResult);
+    const fnETLResult = await handler.executeFunction(fnETL, fnETLArgMap);
+    console.log('fnETLResult');
+    console.log(fnETLResult);
   });
 });
