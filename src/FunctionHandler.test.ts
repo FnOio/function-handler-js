@@ -319,6 +319,7 @@ describe('Workflow', () => {
         console.log('⚠️ publish');
         const [fpathRDFData,] = args;
         console.log(fpathRDFData);
+        return 'http://localhost/sparql';
       },
     };
     // Load JS implementations
