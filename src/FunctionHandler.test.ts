@@ -284,7 +284,7 @@ describe('Workflow', () => {
     //
     const functionJavaScriptImplementations = {
       executeRMLMapper: async (...args) => {
-        console.log(`executeRMLMapper(${args})`);
+        console.log('⚠️ executeRMLMapper');
         let [
           fpathMapping, fpathOutput, fpathRMLMapperJar, fpathRMLMapperTempFolder, sources
         ] = args;
@@ -315,7 +315,11 @@ describe('Workflow', () => {
 
         return fpathOutput;
       },
-      publish: (x) => new Error('TODO')
+      publish: (...args) => {
+        console.log('⚠️ publish');
+        const [fpathRDFData,] = args;
+        console.log(fpathRDFData);
+      },
     };
     // Load JS implementations
     const jsHandler = new JavaScriptHandler();

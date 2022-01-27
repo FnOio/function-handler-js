@@ -45,8 +45,8 @@ fns:executeRMLMapperMapping
 fns:publish
     a fno:Function ;
     dcterms:description "Publishes RDF to SPARQL endpoint"@en ;
-    fno:expects ( fns:iriParameter ) ;
-    fno:returns ( fns:iriOutput )
+    fno:expects ( fns:inputRDFParameter ) ;
+    fno:returns ( fns:returnOutput )
 .
 
 fns:publishImplementation
@@ -62,7 +62,7 @@ fns:publishMapping
     a fno:Mapping ;
     fno:function fns:publish ;
     fno:implementation fns:publishImplementation ;
-    fno:parameterMapping fns:iriParameterMapping ;
-    fno:returnMapping fns:iriOutputMapping ;
+    fno:parameterMapping fns:inputRDFParameterMapping ;
+    fno:returnMapping fns:returnOutputMapping ;
     fno:methodMapping fns:publishMethodMapping
 .

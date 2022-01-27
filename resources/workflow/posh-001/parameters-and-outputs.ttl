@@ -57,3 +57,11 @@ fns:sourcesParameter a fno:Parameter ;
     fno:predicate fns:sources ;
     fno:type ex:recordStringToAny .
 
+fns:inputRDFParameter a fno:Parameter ;
+    fno:predicate fns:inputRDF ;
+    fno:type xsd:anyURI .
+
+fns:inputRDFParameterMapping a fno:ParameterMapping,
+        fnom:PositionParameterMapping ;
+    fnom:functionParameter fns:inputRDFParameter ;
+    fnom:implementationParameterPosition 0 .

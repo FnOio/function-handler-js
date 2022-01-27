@@ -77,6 +77,17 @@ fns:ETLComposition
             fnoc:functionOutput fns:returnOutput 
         ] ;
         fnoc:mapTo [
+            fnoc:constituentFunction fns:publish;
+            fnoc:functionParameter fns:inputRDFParameter
+        ] 
+    ],
+
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:publish;
+            fnoc:functionOutput fns:returnOutput 
+        ] ;
+        fnoc:mapTo [
             fnoc:constituentFunction fns:ETL;
             fnoc:functionOutput fns:returnOutput
         ] 
