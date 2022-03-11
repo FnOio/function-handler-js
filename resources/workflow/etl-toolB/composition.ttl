@@ -1,0 +1,50 @@
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnoc: <https://w3id.org/function/vocabulary/composition#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fns: <http://example.com/functions#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+fns:ETL
+    a fno:Function ;
+    dcterms:description "ETL"@en ;
+    fno:expects ( fns:fpathMappingParameter  ) ;
+    fno:returns ( fns:returnOutput )
+.
+
+fns:ETLComposition
+    a fnoc:Composition;
+    #
+    fnoc:composedOf [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:ETL;
+            fnoc:functionParameter fns:fpathMappingParameter 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:generateRDF;
+            fnoc:functionParameter fns:fpathMappingParameter
+        ] 
+    ],
+
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:generateRDF;
+            fnoc:functionOutput fns:returnOutput 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:publish;
+            fnoc:functionParameter fns:inputRDFParameter
+        ] 
+    ],
+
+    [
+        fnoc:mapFrom [
+            fnoc:constituentFunction fns:publish;
+            fnoc:functionOutput fns:returnOutput 
+        ] ;
+        fnoc:mapTo [
+            fnoc:constituentFunction fns:ETL;
+            fnoc:functionOutput fns:returnOutput
+        ] 
+    ]
+.

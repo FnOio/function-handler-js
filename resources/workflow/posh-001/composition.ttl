@@ -93,38 +93,3 @@ fns:ETLComposition
         ] 
     ]
 .
-
-# fns:ETLComposition
-#     a fnoc:Composition;
-#     #
-#     fnoc:composedOf [
-#         fnoc:mapFrom [
-#             fnoc:constituentFunction fns:ETL;
-#             fnoc:functionParameter fns:iriParameter 
-#         ] ;
-#         fnoc:mapTo [
-#             fnoc:constituentFunction fns:executeRMLMapper;
-#             fnoc:functionParameter fns:iriParameter
-#         ] 
-#     ],
-#     [
-#         fnoc:mapFrom [
-#             fnoc:constituentFunction fns:executeRMLMapper;
-#             fnoc:functionOutput fns:iriOutput 
-#         ] ;
-#         fnoc:mapTo [
-#             fnoc:constituentFunction fns:publish;
-#             fnoc:functionParameter fns:iriParameter
-#         ] 
-#     ],
-#     [
-#         fnoc:mapFrom [
-#             fnoc:constituentFunction fns:publish;
-#             fnoc:functionOutput fns:iriOutput 
-#         ] ;
-#         fnoc:mapTo [
-#             fnoc:constituentFunction fns:ETL;
-#             fnoc:functionOutput fns:iriOutput
-#         ] 
-#     ]
-# .

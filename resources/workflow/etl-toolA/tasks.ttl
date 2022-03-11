@@ -1,0 +1,66 @@
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fns: <http://example.com/functions#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+################################################################################
+# TASK
+fns:generateRDF
+    a fno:Function ;
+    dcterms:description "Generate RDF"@en ;
+    fno:expects ( fns:fpathMappingParameter ) ;
+    fno:returns ( fns:returnOutput )
+.
+
+fns:generateRDFMethodMapping
+    a fno:MethodMapping, fnom:StringMethodMapping ;
+    fnom:method-name "generateRDF"
+.
+
+fns:generateRDFUsingToolAImplementation
+    a fno:Implementation, fnoi:JavaScriptImplementation, fnoi:JavaScriptFunction ;
+.
+
+fns:generateRDFUsingToolBImplementation
+    a fno:Implementation, fnoi:JavaScriptImplementation, fnoi:JavaScriptFunction ;
+.
+
+fns:generateRDFMapping
+    a fno:Mapping ;
+    fno:function fns:generateRDF ;
+    fno:methodMapping fns:generateRDFMethodMapping;
+    fno:parameterMapping fns:fpathMappingParameterMapping ;    
+    fno:returnMapping fns:returnOutputMapping ;
+
+    # Tool A
+    fno:implementation fns:generateRDFUsingToolAImplementation ;
+.
+
+################################################################################
+# TASK
+
+fns:publish
+    a fno:Function ;
+    dcterms:description "Publishes RDF to SPARQL endpoint"@en ;
+    fno:expects ( fns:inputRDFParameter ) ;
+    fno:returns ( fns:returnOutput )
+.
+
+fns:publishImplementation
+    a fno:Implementation, fnoi:JavaScriptImplementation, fnoi:JavaScriptFunction ;
+.
+
+fns:publishMethodMapping
+    a fno:MethodMapping, fnom:StringMethodMapping ;
+    fnom:method-name "publish"
+.
+
+fns:publishMapping
+    a fno:Mapping ;
+    fno:function fns:publish ;
+    fno:implementation fns:publishImplementation ;
+    fno:parameterMapping fns:inputRDFParameterMapping ;
+    fno:returnMapping fns:returnOutputMapping ;
+    fno:methodMapping fns:publishMethodMapping
+.

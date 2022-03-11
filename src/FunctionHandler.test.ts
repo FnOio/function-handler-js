@@ -103,24 +103,9 @@ describe('FunctionHandler tests', () => { // the tests container
 });
 
 describe('Workflow', () => {
-  const handler = new FunctionHandler();
   const dirWorkflowResources = path.join(dirResources, 'workflow');
-  const ttlParametersAndOutputs = readFile(path.join(dirWorkflowResources, 'parameters-and-outputs.ttl'));
-  // Map functionLabel on turtle file
-  const labelOnTtlFile = Object.fromEntries(['functionA', 'functionB', 'functionC'].map((x) => [x, readFile(path.join(dirWorkflowResources, `${x}.ttl`))]));
 
-  const loadParametersAndOutputsGraph = async () => {
-    // Add parameters and outputs graph
-    await handler.addFunctionResource(
-      `${prefixes.fns}ParamsAndOutputs`,
-      {
-        type: 'string',
-        contents: ttlParametersAndOutputs,
-        contentType: 'text/turtle',
-      },
-    );
-  };
-  const loadFunctionResource = (iri: string, contents: any) => handler.addFunctionResource(
+  const loadFunctionResource = (handler, iri: string, contents: any) => handler.addFunctionResource(
     iri,
     {
       contents,
@@ -128,112 +113,38 @@ describe('Workflow', () => {
       contentType: 'text/turtle',
     },
   );
-  const loadFunctionGraphs = async () => {
-    // Add function graphs
-    await Promise.all(Object.entries(labelOnTtlFile).map(([lbl, ttl]) => loadFunctionResource(`${prefixes.fns}${lbl}`, ttl)));
-  };
+
   const minimalFunctionTests = (f) => {
     expect(f).not.to.be.null;
     expect(f.id).not.to.be.null;
   };
-  // Before the first test
-  before(async () => {
-    await loadParametersAndOutputsGraph();
-    await loadFunctionGraphs();
-  });
-  //
-  it('Test individual functions', async () => {
-    // function objects
-    const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
-    const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
-    const fnC = await handler.getFunction(`${prefixes.fns}functionC`);
-    const functionArray = [fnA, fnB, fnC];
-    // Minimal tests that every function must pass
-    functionArray.forEach(minimalFunctionTests);
-    // Map function labels to JS implementations
-    const functionJavaScriptImplementations = {
-      functionA: (x) => `A(${x})`,
-      functionB: (x) => `B(${x})`,
-      functionC: (x) => `C(${x})`,
-    };
-    // Load JS implementations
-    const jsHandler = new JavaScriptHandler();
-    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
-      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn });
-    });
 
-    const resultA = await handler.executeFunction(fnA, { [`${prefixes.fns}str0`]: 1 });
-    const resultB = await handler.executeFunction(fnB, { [`${prefixes.fns}str0`]: 2 });
-    const resultC = await handler.executeFunction(fnC, { [`${prefixes.fns}str0`]: 3 });
-
-    expect(resultA[`${prefixes.fns}out`]).to.equal('A(1)');
-    expect(resultB[`${prefixes.fns}out`]).to.equal('B(2)');
-    expect(resultC[`${prefixes.fns}out`]).to.equal('C(3)');
-  });
-  //
-  it('Test composition AB', async () => {
+  /**
+   * Creates a function handler for the given testcase.
+   * @param caseDir
+   */
+  const setupCase = async (caseDir) => {
+    const handler = new FunctionHandler();
+    console.log('setting up case: ' , caseDir)
     // load composition resources
-    await loadFunctionResource(`${prefixes.fns}compositionAB`, readFile(path.resolve(dirResources, 'workflow/compositionAB.ttl')));
-    // function objects
-    const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
-    const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
-    const fnC = await handler.getFunction(`${prefixes.fns}functionC`);
-    const fnAB = await handler.getFunction(`${prefixes.fns}functionAB`);
-    const functionArray = [fnA, fnB, fnC];
-    // Minimal tests that every function must pass
-    functionArray.forEach(minimalFunctionTests);
-    // Map function labels to JS implementations
-    const functionJavaScriptImplementations = {
-      functionA: (x) => `A(${x})`,
-      functionB: (x) => `B(${x})`,
-      functionC: (x) => `C(${x})`,
-    };
-    // Load JS implementations
-    const jsHandler = new JavaScriptHandler();
-    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
-      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn });
-    });
-
-    const resultAB = await handler.executeFunction(fnAB, { [`${prefixes.fns}str0`]: 1 });
-    expect(resultAB[`${prefixes.fns}out`]).to.equal('B(A(1))');
-  });
-  it('Test composition AB', async () => {
-    // load composition resources
-    await loadFunctionResource(`${prefixes.fns}compositionAB`, readFile(path.resolve(dirResources, 'workflow/compositionAB.ttl')));
-    // function objects
-
-    const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
-    const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
-    const fnC = await handler.getFunction(`${prefixes.fns}functionC`);
-    const fnAB = await handler.getFunction(`${prefixes.fns}functionAB`);
-    const functionArray = [fnA, fnB, fnC];
-    // Minimal tests that every function must pass
-    functionArray.forEach(minimalFunctionTests);
-    // Map function labels to JS implementations
-    const functionJavaScriptImplementations = {
-      functionA: (x) => `A(${x})`,
-      functionB: (x) => `B(${x})`,
-      functionC: (x) => `C(${x})`,
-    };
-    // Load JS implementations
-    const jsHandler = new JavaScriptHandler();
-    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
-      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn });
-    });
-
-    const resultAB = await handler.executeFunction(fnAB, { [`${prefixes.fns}str0`]: 1 });
-    expect(resultAB[`${prefixes.fns}out`]).to.equal('B(A(1))');
-  });
-
-  it.only('Test etl-001', async () => {
-    // load composition resources
-    await loadFunctionResource(`${prefixes.fns}ParamsAndOutputs`, readFile(path.resolve(dirResources, 'workflow/etl-001/parameters-and-outputs.ttl')));
+    await loadFunctionResource(handler, `${prefixes.fns}paramsAndOutputs`, readFile(path.resolve(caseDir, 'parameters-and-outputs.ttl')));
     console.log('loaded parameters and outputs: √');
-    // note: tasks in etl-001 use default parameters and outputs graph
-    await loadFunctionResource(`${prefixes.fns}tasks`, readFile(path.resolve(dirResources, 'workflow/etl-001/tasks.ttl')));
+    await loadFunctionResource(handler,`${prefixes.fns}tasks`, readFile(path.resolve(caseDir, 'tasks.ttl')));
     console.log('loaded tasks: √');
-    await loadFunctionResource(`${prefixes.fns}ETL001`, readFile(path.resolve(dirResources, 'workflow/etl-001/composition.ttl')));
+    await loadFunctionResource(handler,`${prefixes.fns}composition`, readFile(path.resolve(caseDir, 'composition.ttl')));
     console.log('loaded composition: √');
+    return handler;
+  };
+
+  /**
+   *
+   */
+  it('Tests ETL execution sequence', async () => {
+    // load composition resources
+    const dirName = 'etl-001';
+    const caseDir = path.resolve(dirWorkflowResources, dirName);
+    // Setup handler for current testcase
+    const handler = await setupCase(caseDir);
     // function objects
     const fnExecuteRMLMapper = await handler.getFunction(`${prefixes.fns}executeRMLMapper`);
     const fnPublish = await handler.getFunction(`${prefixes.fns}publish`);
@@ -255,26 +166,242 @@ describe('Workflow', () => {
     });
     const refArg0 = `${prefixes.fns}iri`;
     // Execute composition
-    const resultETL = await handler.executeFunction(fnETL, { [refArg0]: 'http://input.be' });
-    console.log('result ETL: ', resultETL);
+    const result = await handler.executeFunction(fnETL, { [refArg0]: 'http://input.be' });
+    expect(result[`${prefixes.fns}out`]).to.equal('publish(executeRMLMapper(http://input.be))');
   });
 
-  it.only('Runs posh-001', async () => {
-    const dirName = 'posh-001';
-    const caseDir = path.resolve(dirResources, 'workflow', dirName);
-    const setupCase = async (caseDir) => {
-      console.log('setting up case: ' , caseDir)
-      // load composition resources
-      await loadFunctionResource(`${prefixes.fns}paramsAndOutputs`, readFile(path.resolve(caseDir, 'parameters-and-outputs.ttl')));
-      console.log('loaded parameters and outputs: √');
-      // note: tasks in etl-001 use default parameters and outputs graph
-      await loadFunctionResource(`${prefixes.fns}tasks`, readFile(path.resolve(caseDir, 'tasks.ttl')));
-      console.log('loaded tasks: √');
-      await loadFunctionResource(`${prefixes.fns}composition`, readFile(path.resolve(caseDir, 'composition.ttl')));
-      console.log('loaded composition: √');
+  /**
+   * This testcase executes an ETL workflow configured to execute the first task (generateRDF)
+   * using Tool A.
+   */
+  it('Runs ETL using Tool A', async () => {
+    const dirName = 'etl-toolA';
+    const caseDir = path.resolve(dirWorkflowResources, dirName);
+    // Setup handler for current testcase
+    const handler = await setupCase(caseDir);
+    // function objects
+    const fnGenerateRDF = await handler.getFunction(`${prefixes.fns}generateRDF`);
+    const fnPublish = await handler.getFunction(`${prefixes.fns}publish`);
+    const taskFunctions = [fnGenerateRDF, fnPublish];
+    taskFunctions.forEach(minimalFunctionTests);
+    console.log('taskFunctions passed minimal function tests √');
+    // JS task implementations
+    const functionJavaScriptImplementations = {
+      generateRDFUsingToolA: (...args) => {
+        console.log('⚠️ generateRDF using Tool A');
+        const [fpathMapping,] = args;
+        console.log(fpathMapping);
+        return 'file://path/to/rdf_output.ttl';
+      },
+      generateRDFUsingToolB: (...args) => {
+        console.log('⚠️ generateRDF using Tool B');
+        throw Error('generateRDFUsingToolB should not be executed for the current testcase!');
+      },
+      publish: (...args) => {
+        console.log('⚠️ publish');
+        const [fpathRDFData,] = args;
+        console.log(fpathRDFData);
+        return 'http://localhost/sparql';
+      },
     };
-    //
-    await setupCase(caseDir);
+    // Load JS implementations
+    console.log('Loading JS implementations into FnO Implementation Handler');
+    const jsHandler = new JavaScriptHandler();
+    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
+      const implementationId = `${prefixes.fns}${lbl}Implementation`;
+      console.log('Loading implementation: ', implementationId);
+      handler.implementationHandler.loadImplementation(implementationId, jsHandler, { fn });
+    });
+    // Helpers
+    const _fns = (x) => `${prefixes.fns}${x}`;
+    const _resolve = (...parts) => path.resolve(caseDir, ...parts);
+
+    // Load composition
+    const fnETL = await handler.getFunction(`${prefixes.fns}ETL`);
+    // Test whether the composition is loaded
+    minimalFunctionTests(fnETL);
+    console.log('fnETL passed minimal function tests √');
+    // Create argmap from its constituting function argmaps
+    const fnETLArgMap = {
+      [_fns('fpathMapping')]: _resolve('mapping.ttl')
+    };
+    console.log('Fasten your seatbelts. We are ready for take off!');
+    // Execute
+    const fnETLResult = await handler.executeFunction(fnETL, fnETLArgMap);
+    console.log('fnETLResult');
+    console.log(fnETLResult);
+  });
+
+  /**
+   * This testcase executes an ETL workflow configured to execute the first task (generateRDF)
+   * using Tool B.
+   */
+  it('Runs ETL using Tool B', async () => {
+    const dirName = 'etl-toolB';
+    const caseDir = path.resolve(dirWorkflowResources, dirName);
+    // Setup handler for current testcase
+    const handler = await setupCase(caseDir);
+    // function objects
+    const fnGenerateRDF = await handler.getFunction(`${prefixes.fns}generateRDF`);
+    const fnPublish = await handler.getFunction(`${prefixes.fns}publish`);
+    const taskFunctions = [fnGenerateRDF, fnPublish];
+    taskFunctions.forEach(minimalFunctionTests);
+    console.log('taskFunctions passed minimal function tests √');
+    // JS task implementations
+    const functionJavaScriptImplementations = {
+      generateRDFUsingToolA: (...args) => {
+        console.log('⚠️ generateRDF using Tool A');
+        throw Error('generateRDFUsingToolA should not be executed for the current testcase!');
+      },
+      generateRDFUsingToolB: (...args) => {
+        console.log('⚠️ generateRDF using Tool B');
+        const [fpathMapping,] = args;
+        console.log(fpathMapping);
+        return 'file://path/to/rdf_output.ttl';
+      },
+      publish: (...args) => {
+        console.log('⚠️ publish');
+        const [fpathRDFData,] = args;
+        console.log(fpathRDFData);
+        return 'http://localhost/sparql';
+      },
+    };
+    // Load JS implementations
+    console.log('Loading JS implementations into FnO Implementation Handler');
+    const jsHandler = new JavaScriptHandler();
+    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
+      const implementationId = `${prefixes.fns}${lbl}Implementation`;
+      console.log('Loading implementation: ', implementationId);
+      handler.implementationHandler.loadImplementation(implementationId, jsHandler, { fn });
+    });
+    // Helpers
+    const _fns = (x) => `${prefixes.fns}${x}`;
+    const _resolve = (...parts) => path.resolve(caseDir, ...parts);
+
+    // Load composition
+    const fnETL = await handler.getFunction(`${prefixes.fns}ETL`);
+    // Test whether the composition is loaded
+    minimalFunctionTests(fnETL);
+    console.log('fnETL passed minimal function tests √');
+    // Create argmap from its constituting function argmaps
+    const fnETLArgMap = {
+      [_fns('fpathMapping')]: _resolve('mapping.ttl')
+    };
+    console.log('Fasten your seatbelts. We are ready for take off!');
+    // Execute
+    const fnETLResult = await handler.executeFunction(fnETL, fnETLArgMap);
+    console.log('fnETLResult');
+    console.log(fnETLResult);
+  });
+
+
+  /**
+   * This testcase executes an ETL workflow configured to execute the first task (generateRDF)
+   * using the RMLMapper.
+   */
+  it('Runs ETL', async () => {
+    const dirName = 'etl';
+    const caseDir = path.resolve(dirWorkflowResources, dirName);
+    // Setup handler for current testcase
+    const handler = await setupCase(caseDir);
+    // function objects
+    const fnGenerateRDF = await handler.getFunction(`${prefixes.fns}generateRDF`);
+    const fnPublish = await handler.getFunction(`${prefixes.fns}publish`);
+    const taskFunctions = [fnGenerateRDF, fnPublish];
+    taskFunctions.forEach(minimalFunctionTests);
+    console.log('taskFunctions passed minimal function tests √');
+    // JS task implementations
+    const functionJavaScriptImplementations = {
+      generateRDFUsingToolA: (...args) => {
+        console.log('⚠️ generateRDF using Tool A');
+        throw Error('generateRDFUsingToolA should not be executed for the current testcase!');
+      },
+      generateRDFUsingToolB: (...args) => {
+        console.log('⚠️ generateRDF using Tool B');
+        throw Error('generateRDFUsingToolB should not be executed for the current testcase!');
+      },
+      executeRMLMapper: async (...args) => {
+        console.log('⚠️ executeRMLMapper');
+        let [
+          fpathMapping
+        ] = args;
+        console.log('❯ args')
+        console.log(args)
+        // Import RMLMapper wrapper
+        const RMLMapperWrapper = require('@rmlio/rmlmapper-java-wrapper');
+        // Configuration
+        const fpathRMLMapperJar = path.resolve(caseDir, '../../../rmlmapper.jar');
+        const fpathRMLMapperTempFolder = path.resolve(caseDir, 'temp');
+        const fpathOutput = path.resolve(caseDir, 'out.ttl');
+        const sources = {
+            'input.csv': readFile(_resolve('input.csv')),
+          };
+        // Read mapping
+        const mapping = fs.readFileSync(fpathMapping, { encoding: 'utf-8' });
+        if (!mapping) throw Error('Mapping is undefined');
+        console.log('➜ read rmlmapping')
+        // Initialize RMLMapperWrapper
+        const wrapper = new RMLMapperWrapper(fpathRMLMapperJar, fpathRMLMapperTempFolder, true);
+        // Execute RML Mapper
+        try {
+          console.log('➜ Executing RMLMapper!!! 🧨');
+          const result = await wrapper.execute(mapping, {
+            sources,
+            generateMetadata: false, serialization: 'turtle' });
+          const { output } = result;
+          console.log('➜ writing output to: ' , fpathOutput);
+          writeFile(fpathOutput, output);
+        } catch (error) {
+          console.log('error while executing rmlmapper 😫');
+          console.log(error);
+        }
+
+        return fpathOutput;
+      },
+      publish: (...args) => {
+        console.log('⚠️ publish');
+        const [fpathRDFData,] = args;
+        console.log(fpathRDFData);
+        return 'http://localhost/sparql';
+      },
+    };
+
+    // Load JS implementations
+    console.log('Loading JS implementations into FnO Implementation Handler');
+    const jsHandler = new JavaScriptHandler();
+    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
+      const implementationId = `${prefixes.fns}${lbl}Implementation`;
+      console.log('Loading implementation: ', implementationId);
+      handler.implementationHandler.loadImplementation(implementationId, jsHandler, { fn });
+    });
+    // Helpers
+    const _fns = (x) => `${prefixes.fns}${x}`;
+    const _resolve = (...parts) => path.resolve(caseDir, ...parts);
+
+    // Load composition
+    const fnETL = await handler.getFunction(`${prefixes.fns}ETL`);
+    // Test whether the composition is loaded
+    minimalFunctionTests(fnETL);
+    console.log('fnETL passed minimal function tests √');
+    // Create argmap from its constituting function argmaps
+    const fnETLArgMap = {
+      [_fns('fpathMapping')]: _resolve('mapping.ttl')
+    };
+    console.log('Fasten your seatbelts. We are ready for take off!');
+    // Execute
+    const fnETLResult = await handler.executeFunction(fnETL, fnETLArgMap);
+    console.log('fnETLResult');
+    console.log(fnETLResult);
+  });
+
+  /**
+   * This testcase executes an ETL workflow of which the executeRMLMapper parameters are configurable.
+   */
+  it('Runs posh-001', async () => {
+    const dirName = 'posh-001';
+    const caseDir = path.resolve(dirWorkflowResources, dirName);
+    // Setup handler for current testcase
+    const handler = await setupCase(caseDir);
     // function objects
     const fnExecuteRMLMapper = await handler.getFunction(`${prefixes.fns}executeRMLMapper`);
     const fnPublish = await handler.getFunction(`${prefixes.fns}publish`);
@@ -352,4 +479,6 @@ describe('Workflow', () => {
     console.log('fnETLResult');
     console.log(fnETLResult);
   });
+
+
 });
