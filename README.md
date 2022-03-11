@@ -5,8 +5,12 @@ and interact with a Function Hub instance.
 
 ## Installation
 
-`npm install`
+```bash 
+npm install
+```
+## Test
 
-## Example
-
-`node example-client.js`
+Run tests using
+```bash
+npm test
+```
