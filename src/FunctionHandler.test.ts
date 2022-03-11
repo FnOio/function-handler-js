@@ -139,7 +139,7 @@ describe('Workflow', () => {
   /**
    *
    */
-  it('Tests ETL execution sequence', async () => {
+  it('Verify ETL execution sequence', async () => {
     // load composition resources
     const dirName = 'etl-001';
     const caseDir = path.resolve(dirWorkflowResources, dirName);
