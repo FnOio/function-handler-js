@@ -10,6 +10,11 @@ npm install
 ```
 ## Test
 
+Setup prerequisites
+```bash
+npm run setup:download-rmlmapper
+```
+
 Run tests using
 ```bash
 npm test
