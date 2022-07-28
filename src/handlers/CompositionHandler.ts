@@ -61,7 +61,7 @@ export class CompositionHandler extends Handler {
         //     sum32o: ['sum32'],
         // }
         // - fill in inputs in composedOfMap
-        const compositionFn = options.compositionFn;
+        const { compositionFn } = options;
         Object.keys(options.dependencyMeta[compositionFn].inputs).forEach((predicate) => {
             options.dependencyMeta[compositionFn].inputs[predicate].forEach((compositionId) => {
                 options.composedOfValueMap[compositionId] = args[predicate];
@@ -79,8 +79,8 @@ export class CompositionHandler extends Handler {
                 thisArgs[predicate] = options.composedOfValueMap[options.dependencyMeta[id].inputs[predicate][0]];
             }
             const results = await options.implementationHandler.executeImplementation(implementationId, thisArgs);
-            Object.keys(results).forEach(predicate => {
-                options.dependencyMeta[id].outputs[predicate].forEach(compositionId => {
+            Object.keys(results).forEach((predicate) => {
+                options.dependencyMeta[id].outputs[predicate].forEach((compositionId) => {
                     options.composedOfValueMap[compositionId] = results[predicate];
                 });
             });
