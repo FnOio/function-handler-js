@@ -7,6 +7,10 @@ and interact with a Function Hub instance.
 
 `npm install`
 
+## Testing
+
+`npm test`
+
 ## Example
 
-`node example-client.js`
+See the tests under `./src`
