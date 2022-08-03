@@ -1,5 +1,3 @@
-import { Implementation } from "../models";
-
 export abstract class Handler {
     _handlingIri: string
 
@@ -11,5 +9,21 @@ export abstract class Handler {
         return this._handlingIri;
     }
 
-    abstract executeFunction(implementation: Implementation, args: any)
+    abstract executeFunction(args: ArgumentMap, options: any): Promise<{ [key: string]: any }>
+}
+
+/**
+ * mapping result for parameters, e.g. position etc
+ */
+export interface ArgumentMap {
+    positionArgs?: {
+        [index: string]: string[]
+    }
+}
+
+/**
+ * mapping result for outputs, e.g. default etc
+ */
+export interface ReturnMap {
+    _default?: string
 }

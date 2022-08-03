@@ -1,0 +1,43 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex: <http://www.example.com#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fns: <http://example.com/functions#> .
+@prefix fnoc: <https://w3id.org/function/vocabulary/composition#> .
+@prefix skos:     <http://www.w3.org/2004/02/skos/core#> .
+
+################################################################################
+# INPUT / OUTPUT
+
+
+fns:str0Parameter
+    a fno:Parameter ;
+    rdfs:label "String parameter 0"@en ;
+    fno:predicate fns:str0 ;
+    fno:type xsd:string ;
+    fno:required "true"^^xsd:boolean
+.
+
+fns:strOutput
+    a             fno:Output ;
+    fno:name      "String output" ;
+    rdfs:label    "String output" ;
+    fno:predicate fns:out ;
+    fno:type xsd:string
+.
+
+fns:str0ParameterMapping
+    a fno:ParameterMapping, fnom:PositionParameterMapping ;
+    fnom:functionParameter fns:str0Parameter ;
+    fnom:implementationParameterPosition "0"^^xsd:integer 
+.
+
+fns:strOutputMapping 
+    a fno:ReturnMapping, fnom:DefaultReturnMapping ;
+    fnom:functionOutput fns:strOutput 
+.

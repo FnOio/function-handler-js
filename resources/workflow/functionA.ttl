@@ -1,0 +1,30 @@
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fns: <http://example.com/functions#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+fns:functionA
+    a fno:Function ;
+    dcterms:description "function A "@en ;
+    fno:expects ( fns:str0Parameter ) ;
+    fno:returns ( fns:strOutput )
+.
+
+fns:functionAImplementation
+    a fno:Implementation, fnoi:JavaScriptImplementation, fnoi:JavaScriptFunction ;
+.
+
+fns:functionAMethodMapping 
+    a fno:MethodMapping, fnom:StringMethodMapping ;
+    fnom:method-name "functionA" 
+.
+
+fns:functionAMapping 
+    a fno:Mapping ;
+    fno:function fns:functionA ;
+    fno:implementation fns:functionAImplementation ;
+    fno:parameterMapping fns:str0ParameterMapping ;
+    fno:returnMapping fns:strOutputMapping ;
+    fno:methodMapping fns:functionAMethodMapping 
+.

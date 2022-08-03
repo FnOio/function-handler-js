@@ -1,113 +1,208 @@
 import { expect } from 'chai';
-import { FunctionHandler } from "./FunctionHandler";
+import { FunctionHandler } from './FunctionHandler';
 import { } from 'mocha';
 import { JavaScriptHandler } from './handlers/JavaScriptHandler';
-import { Argument, Function, Implementation } from './models';
-import { namedNode } from 'rdflib';
-import { Term } from 'rdf-js';
 import prefixes from './prefixes';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const fnTtl = `@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix ex: <http://www.example.com#> .
-@prefix dcterms: <http://purl.org/dc/terms/> .
-@prefix doap: <http://usefulinc.com/ns/doap#> .
-@prefix fno: <https://w3id.org/function/ontology#> .
-@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
-@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .       
-@prefix fns: <http://example.com/functions#> .
+function readFile(path) {
+  return fs.readFileSync(path, { encoding: 'utf-8' });
+}
 
-fns:aParameter rdf:type fno:Parameter ;
-        rdfs:label "a"@en ;
-        fno:predicate fns:a ;
-        fno:required "true"^^xsd:boolean .
-
-fns:bParameter rdf:type fno:Parameter ;
-        rdfs:label "b"@en ;
-        fno:predicate fns:b ;
-        fno:required "true"^^xsd:boolean .
-
-fns:sumOutput rdf:type fno:Output ;
-        rdfs:label "sum output"@en ;
-        fno:predicate fno:Result .
-
-fns:sum rdf:type fno:Function ;
-        dcterms:description "Description of the sum function"@en ;
-        rdfs:label "sum"@en ;
-        fno:expects _:g0 ;
-        fno:returns _:g2 .
-
-_:g0 rdf:first fns:aParameter ;
-        rdf:rest _:g1 .
-
-_:g1 rdf:first fns:bParameter ;
-        rdf:rest rdf:nil .
-
-_:g2 rdf:first fns:sumOutput ;
-        rdf:rest rdf:nil .
-
-fns:sumImplementation rdf:type fno:Implementation, fnoi:JavaScriptImplementation, fnoi:JavaScriptFunction ;
-        doap:release fns:sumImplementationRelease .
-
-fns:sumImplementationRelease doap:file-release fns:sumImplementationReleaseFile .
-
-fns:sumImplementationReleaseFile ex:value " function sum(a, b) {   return a + b; } " .
-
-fns:sumMapping rdf:type fno:Mapping ;
-        fno:function fns:sum ;
-        fno:implementation fns:sumImplementation ;
-        fno:parameterMapping fns:aParametermapping, fns:bParametermapping ;
-        fno:returnMapping fns:sumReturnMapping ;
-        fno:methodMapping fns:sumMethodMapping .
-
-fns:aParametermapping rdf:type fno:ParameterMapping, fnom:PositionParameterMapping ;
-        fnom:functionParameter fns:aParameter ;
-        fnom:implementationParameterPosition "0"^^xsd:integer .
-
-fns:bParametermapping rdf:type fno:ParameterMapping, fnom:PositionParameterMapping ;
-        fnom:functionParameter fns:bParameter ;
-        fnom:implementationParameterPosition "1"^^xsd:integer .
-
-fns:sumReturnMapping rdf:type fno:ReturnMapping, fnom:DefaultReturnMapping .
-
-fns:sumMethodMapping rdf:type fno:MethodMapping, fnom:StringMethodMapping ;
-        fnom:method-name "sum" .
-`;
+const dirResources = path.resolve(__dirname, '../resources');
+const fnTtl = readFile(path.resolve(dirResources, 'sum.ttl'));
+const fnTtlComposition = readFile(path.resolve(dirResources, 'sum-composition.ttl'));
 
 describe('FunctionHandler tests', () => { // the tests container
-        it.skip('can parse a function file', async () => { // the single test
-                const handler = new FunctionHandler();
-                await handler.addFunctionResource("http://users.ugent.be/~bjdmeest/function/grel.ttl#");
 
-                const fn = await handler.getFunction("http://users.ugent.be/~bjdmeest/function/grel.ttl#array_join");
+  it('can parse a function file', async () => { // the single test
+    const handler = new FunctionHandler();
+    await handler.addFunctionResource('http://users.ugent.be/~bjdmeest/function/grel.ttl#');
 
-                expect(fn).to.be.any;
-        });
+    const fn = await handler.getFunction('http://users.ugent.be/~bjdmeest/function/grel.ttl#array_join');
 
-        it('can load a local file, add a handler, and execute a function', async () => {
-                const handler = new FunctionHandler();
-                await handler.addFunctionResource(`${prefixes.fns}sum`, {
-                        type: 'string',
-                        contents: fnTtl,
-                        contentType: "text/turtle"
-                });
-                const fn = await handler.getFunction(`${prefixes.fns}sum`);
+    expect(fn).to.be.any;
+  });
 
-                expect(fn).to.be.not.null;
+  it('can load a local file, add a handler, and execute a function', async () => {
+    const handler = new FunctionHandler();
+    await handler.addFunctionResource(`${prefixes.fns}sum`, {
+      type: 'string',
+      contents: fnTtl,
+      contentType: 'text/turtle',
+    });
+    const fn = await handler.getFunction(`${prefixes.fns}sum`);
 
-                expect(fn.id).to.equal(`${prefixes.fns}sum`)
+    expect(fn).to.be.not.null;
 
-                const jsHandler = new JavaScriptHandler();
-                jsHandler.loadFunction(new Implementation(namedNode(`${prefixes.fns}sumImplementation`) as Term), (a, b) => a + b)
+    expect(fn.id).to.equal(`${prefixes.fns}sum`);
 
-                handler.addHandler(jsHandler);
-                const result = await handler.executeFunction(fn, [
-                        new Argument(`${prefixes.fns}aParameter`, 1),
-                        new Argument(`${prefixes.fns}bParameter`, 1),
-                ])
+    const jsHandler = new JavaScriptHandler();
+    handler.implementationHandler.loadImplementation(`${prefixes.fns}sumImplementation`, jsHandler, { fn: (a, b) => a + b });
+    const result = await handler.executeFunction(fn, {
+      [`${prefixes.fns}a`]: 1,
+      [`${prefixes.fns}b`]: 2,
+    });
 
-                expect(result).to.equal(2);
-                return;
-        })
+    expect(result[`${prefixes.fns}out`]).to.equal(3);
+    return;
+  });
+
+  it('can load a local file, add a handler, compose, and execute a function', async () => {
+    const handler = new FunctionHandler();
+    await handler.addFunctionResource(`${prefixes.fns}sum3`, {
+      type: 'string',
+      contents: fnTtl + fnTtlComposition,
+      contentType: 'text/turtle',
+    });
+    const fn = await handler.getFunction(`${prefixes.fns}sum3`);
+
+    expect(fn).to.be.not.null;
+
+    expect(fn.id).to.equal(`${prefixes.fns}sum3`);
+
+    const jsHandler = new JavaScriptHandler();
+    handler.implementationHandler.loadImplementation(`${prefixes.fns}sumImplementation`, jsHandler, { fn: (a, b) => a + b });
+    const result = await handler.executeFunction(fn, {
+      [`${prefixes.fns}a`]: 1,
+      [`${prefixes.fns}b`]: 2,
+      [`${prefixes.fns}c`]: 3,
+    });
+
+    expect(result[`${prefixes.fns}out`]).to.equal(6);
+    return;
+  });
+
+  it('Function id should not be a function', async () => {
+    const handler = new FunctionHandler();
+    await handler.addFunctionResource(`${prefixes.fns}sum3`, {
+      type: 'string',
+      contents: fnTtl + fnTtlComposition,
+      contentType: 'text/turtle',
+    });
+    const fn = await handler.getFunction(`${prefixes.fns}sum3`);
+    expect(fn).to.be.not.null;
+    expect(fn.id).to.equal(`${prefixes.fns}sum3`);
+    const jsHandler = new JavaScriptHandler();
+    const iriSumImplementation = `${prefixes.fns}sumImplementation`;
+    handler.implementationHandler.loadImplementation(iriSumImplementation, jsHandler, { fn: (a, b) => a + b });
+
+    // This call is needed for the implementationHandler to update its loadedImplementations
+    handler.getHandlerViaCompositions(fn);
+    const loadedSumImplementation = handler.implementationHandler.getImplementation(iriSumImplementation);
+    expect(loadedSumImplementation.fnId).not.to.be.an('function');
+    const result = await handler.executeFunction(fn, {
+      [`${prefixes.fns}a`]: 1,
+      [`${prefixes.fns}b`]: 2,
+      [`${prefixes.fns}c`]: 3,
+    });
+    expect(result[`${prefixes.fns}out`]).to.equal(6);
+    return;
+  });
+});
+
+describe('Workflow', () => {
+  const handler = new FunctionHandler();
+  const dirWorkflowResources = path.join(dirResources, 'workflow');
+  const ttlParametersAndOutputs = readFile(path.join(dirWorkflowResources, 'parameters-and-outputs.ttl'));
+  // Map functionLabel on turtle file
+  const labelOnTtlFile = Object.fromEntries(['functionA', 'functionB', 'functionC'].map((x) => {
+    return [x, readFile(path.join(dirWorkflowResources, `${x}.ttl`))];
+  }));
+
+  const loadParametersAndOutputsGraph = async () => {
+    // Add parameters and outputs graph
+    await handler.addFunctionResource(
+      `${prefixes.fns}ParamsAndOutputs`,
+      {
+        type: 'string',
+        contents: ttlParametersAndOutputs,
+        contentType: 'text/turtle',
+      });
+  };
+  const loadFunctionResource = (iri: string, contents: any) => {
+    return handler.addFunctionResource(iri,
+      {
+        contents,
+        type: 'string',
+        contentType: 'text/turtle',
+      });
+  };
+  const loadFunctionGraphs = async () => {
+    // Add function graphs
+    await Promise.all(Object.entries(labelOnTtlFile).map(([lbl, ttl]) => loadFunctionResource(`${prefixes.fns}${lbl}`, ttl)));
+  };
+  // Before the first test
+  before(async () => {
+    await loadParametersAndOutputsGraph();
+    await loadFunctionGraphs();
+  });
+  //
+  it('Test individual functions', async () => {
+    // function objects
+    const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
+    const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
+    const fnC = await handler.getFunction(`${prefixes.fns}functionC`);
+    const functionArray = [fnA, fnB, fnC];
+    // Minimal tests that every function must pass
+    const minimalFunctionTests = (f) => {
+      expect(f).not.to.be.null;
+      expect(f.id).not.to.be.null;
+    };
+    functionArray.forEach(minimalFunctionTests);
+    // Map function labels to JS implementations
+    const functionJavaScriptImplementations = {
+      functionA: x => `A(${x})`,
+      functionB: x => `B(${x})`,
+      functionC: x => `C(${x})`,
+    };
+    // Load JS implementations
+    const jsHandler = new JavaScriptHandler();
+    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
+      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn },);
+    });
+
+    const resultA = await handler.executeFunction(fnA, { [`${prefixes.fns}str0`]: 1 });
+    const resultB = await handler.executeFunction(fnB, { [`${prefixes.fns}str0`]: 2 });
+    const resultC = await handler.executeFunction(fnC, { [`${prefixes.fns}str0`]: 3 });
+
+    expect(resultA[`${prefixes.fns}out`]).to.equal('A(1)');
+    expect(resultB[`${prefixes.fns}out`]).to.equal('B(2)');
+    expect(resultC[`${prefixes.fns}out`]).to.equal('C(3)');
+
+    return;
+  });
+  //
+  it('Test composition AB', async () => {
+    // load composition resources
+    await loadFunctionResource(`${prefixes.fns}compositionAB`, readFile(path.resolve(dirResources, 'workflow/compositionAB.ttl')));
+    // function objects
+    const fnA = await handler.getFunction(`${prefixes.fns}functionA`);
+    const fnB = await handler.getFunction(`${prefixes.fns}functionB`);
+    const fnC = await handler.getFunction(`${prefixes.fns}functionC`);
+    const fnAB = await handler.getFunction(`${prefixes.fns}functionAB`);
+    const functionArray = [fnA, fnB, fnC];
+    // Minimal tests that every function must pass
+    const minimalFunctionTests = (f) => {
+      expect(f).not.to.be.null;
+      expect(f.id).not.to.be.null;
+    };
+    functionArray.forEach(minimalFunctionTests);
+    // Map function labels to JS implementations
+    const functionJavaScriptImplementations = {
+      functionA: x => `A(${x})`,
+      functionB: x => `B(${x})`,
+      functionC: x => `C(${x})`,
+    };
+    // Load JS implementations
+    const jsHandler = new JavaScriptHandler();
+    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
+      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn },);
+    });
+
+    const resultAB = await handler.executeFunction(fnAB, { [`${prefixes.fns}str0`]: 1 });
+    expect(resultAB[`${prefixes.fns}out`]).to.equal('B(A(1))');
+    return;
+  });
 });
