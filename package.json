@@ -1,6 +1,6 @@
 {
   "name": "function-handler-js",
-  "version": "0.0.1",
+  "version": "0.3.0",
   "description": "FnO Function Handler",
   "main": "example-client.js",
   "scripts": {
