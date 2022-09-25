@@ -482,3 +482,70 @@ describe('Workflow', () => {
 
 
 });
+
+describe('FnO-CWL', () => {
+  const dirWorkflowResources = path.join(dirResources, 'fno-cwl');
+
+  const loadFunctionResource = (handler, iri: string, contents: any) => handler.addFunctionResource(
+    iri,
+    {
+      contents,
+      type: 'string',
+      contentType: 'text/turtle',
+    },
+  );
+
+  const minimalFunctionTests = (f) => {
+    expect(f).not.to.be.null;
+    expect(f.id).not.to.be.null;
+  };
+
+  /**
+   * Creates a function handler for the given testcase.
+   * @param caseDir
+   */
+  const setupCase = async (caseDir) => {
+    const handler = new FunctionHandler();
+    console.log('setting up case: ' , caseDir)
+    // load abstract function description
+    await loadFunctionResource(handler, `${prefixes.fns}abstract`, readFile(path.resolve(caseDir, 'abstract.fno.ttl')));
+    console.log('loaded abstract function description √');
+    await loadFunctionResource(handler, `${prefixes.fns}concrete`, readFile(path.resolve(caseDir, 'concrete.fno.ttl')));
+    console.log('loaded concrete function description √');
+    
+    return handler;
+  };
+
+  /**
+   *
+   */
+  it('toUpperCase', async () => {
+    // load composition resources
+    const dirName = 'toUpperCase';
+    const caseDir = path.resolve(dirWorkflowResources, dirName);
+    // Setup handler for current testcase
+    const handler = await setupCase(caseDir);
+    // function objects
+    const fnToUpperCase = await handler.getFunction(`${prefixes.fns}upperCaseFunction`);
+    minimalFunctionTests(fnToUpperCase)
+    // Map function labels to JS implementations
+    const functionJavaScriptImplementations = {
+      upperCaseFunction: (x) => x.toUpperCase()
+    };
+    // Load JS implementations
+    const jsHandler = new JavaScriptHandler();
+    Object.entries(functionJavaScriptImplementations).forEach(([lbl, fn]) => {
+      console.log(`${prefixes.fns}${lbl}Implementation`);
+      
+      handler.implementationHandler.loadImplementation(`${prefixes.fns}${lbl}Implementation`, jsHandler, { fn });
+    });
+    const refArg0 = `${prefixes.fns}x`;
+    // Execute composition
+    const result = await handler.executeFunction(fnToUpperCase, { [refArg0]: 'abc' });
+    expect(result[`${prefixes.fns}out`]).to.equal('ABC');
+  });
+
+  
+
+});
+
