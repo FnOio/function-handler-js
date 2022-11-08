@@ -6,11 +6,15 @@
   "scripts": {
     "test": "ts-mocha 'src/**/*.test.ts'",
     "test:fno2cwl": "ts-mocha 'src/FnO2CWL.test.ts'",
+    "test:fno2cwl:watch": "ts-mocha 'src/FnO2CWL.test.ts' -w",
     "build:typescript": "npx tsc index.ts",
     "setup:download-rmlmapper": "curl -L https://github.com/RMLio/rmlmapper-java/releases/download/v4.11.0/rmlmapper.jar --output rmlmapper.jar"
   },
   "author": "Lander Noterman <lander.noterman@ugent.be>",
-  "contributors": [ "Gertjan De Mulder", "Ben De Meester" ],
+  "contributors": [
+    "Gertjan De Mulder",
+    "Ben De Meester"
+  ],
   "license": "ISC",
   "dependencies": {
     "@rmlio/rmlmapper-java-wrapper": "^2.0.2",
