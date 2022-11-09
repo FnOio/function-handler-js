@@ -1,0 +1,42 @@
+@prefix ex: <http://example.org/#> .
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fns: <http://example.com/functions#> .
+
+fns:abstractToConcreteMapping
+  a fno:Mapping;
+  fno:function fns:upperCaseFunction;
+  fno:implementation fns:upperCaseFunctionImplementation;
+  fno:methodMapping fns:methodMapping ;
+  fno:parameterMapping fns:parameterMapping;
+  fno:returnMapping fns:returnMapping;
+.
+
+fns:upperCaseFunctionImplementation
+  a fno:Implementation, fnoi:JavaScriptImplementation, fnoi:JavaScriptFunction;
+  ex:expression "function toUpperCase(x) { return x.toUpperCase() }"
+.
+
+fns:methodMapping
+  a fno:MethodMapping, fnom:StringMethodMapping;
+  fnom:method-name "toUpperCase";
+.
+
+
+# fns:parameterMapping # TODO: PropertyParameterMapping not yet supported by function-handler-js
+#   a fno:ParameterMapping, fnom:PropertyParameterMapping;
+#   fnom:functionParameter fns:stringParameter;
+#   fnom:implementationProperty "x";
+# .
+fns:parameterMapping
+  a fno:ParameterMapping, fnom:PositionParameterMapping;
+  fnom:functionParameter fns:stringParameter;
+  fnom:implementationParameterPosition 0;
+.
+
+
+fns:returnMapping
+  a fno:ReturnMapping, fnom:DefaultReturnMapping;
+  fnom:functionOutput fns:uppercaseOutput;
+.

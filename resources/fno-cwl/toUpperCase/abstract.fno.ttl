@@ -1,0 +1,29 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix fno: <https://w3id.org/function/ontology#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fns: <http://example.com/functions#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+fns:upperCaseFunction
+    a                   fno:Function ;
+    fno:name            "to Uppercase" ;
+    rdfs:label          "to Uppercase" ;
+    dcterms:description "Returns the input with all letters in upper case." ;
+    fno:expects         ( fns:stringParameter ) ;
+    fno:returns         ( fns:uppercaseOutput ) .
+
+fns:stringParameter rdf:type fno:Parameter ;
+        rdfs:label "x"@en ;
+        fno:predicate fns:x ;
+        fno:required "true"^^xsd:boolean .
+
+fns:uppercaseOutput rdf:type fno:Output ;
+        rdfs:label "uppercase output"@en ;
+        fno:predicate fns:out .
+
+# Alternative: link to published GREL description
+# <#upperCaseFunction> 
+#   owl:sameAs <https://users.ugent.be/~bjdmeest/function/grel.ttl#toUpperCase> .
