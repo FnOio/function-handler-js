@@ -1,0 +1,42 @@
+@prefix CommandOutputBinding: <https://w3id.org/cwl/cwl#CommandOutputBinding/> .
+@prefix Workflow:             <https://w3id.org/cwl/cwl#Workflow/> .
+@prefix cwl:                  <https://w3id.org/cwl/cwl#> .
+@prefix ex:                   <http://example.org/> .
+@prefix fno:                  <https://w3id.org/function/ontology#> .
+@prefix fnoc:                 <https://w3id.org/function/vocabulary/composition#> .
+@prefix ns1:                  <http://commonwl.org/cwltool#> .
+@prefix rdf:                  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:                 <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sld:                  <https://w3id.org/cwl/salad#> .
+@prefix xsd:                  <http://www.w3.org/2001/XMLSchema#> .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/sparql/cwl2fno-composition-mappings.rq#workflowComposition>
+        rdf:type         fnoc:Composition ;
+        fnoc:composedOf  [ fnoc:mapFrom  [ ex:source      <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo/out> ;
+                                           ex:sourceTool  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo>
+                                         ] ;
+                           fnoc:mapTo    [ ex:sink      <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/message> ;
+                                           ex:sinkTool  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase>
+                                         ]
+                         ] ;
+        fnoc:composedOf  [ fnoc:mapFrom  [ ex:source      <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo/out> ;
+                                           ex:sourceTool  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo>
+                                         ] ;
+                           fnoc:mapTo    [ ex:sink      <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/message> ;
+                                           ex:sinkTool  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase>
+                                         ]
+                         ] ;
+        fnoc:composedOf  [ fnoc:mapFrom  [ ex:source      <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/uppercase_message> ;
+                                           ex:sourceTool  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl>
+                                         ] ;
+                           fnoc:mapTo    [ ex:sink      <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#wf_output> ;
+                                           ex:sinkTool  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl>
+                                         ]
+                         ] ;
+        fnoc:composedOf  [ fnoc:mapFrom  [ ex:source      <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/uppercase_message> ;
+                                           ex:sourceTool  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl>
+                                         ] ;
+                           fnoc:mapTo    [ ex:sink      <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#wf_output> ;
+                                           ex:sinkTool  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl>
+                                         ]
+                         ] .

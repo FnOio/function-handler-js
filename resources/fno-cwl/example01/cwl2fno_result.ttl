@@ -1,0 +1,62 @@
+@prefix CommandOutputBinding: <https://w3id.org/cwl/cwl#CommandOutputBinding/> .
+@prefix Workflow:             <https://w3id.org/cwl/cwl#Workflow/> .
+@prefix cwl:                  <https://w3id.org/cwl/cwl#> .
+@prefix ex:                   <http://example.org/> .
+@prefix fno:                  <https://w3id.org/function/ontology#> .
+@prefix fnoc:                 <https://w3id.org/function/vocabulary/composition#> .
+@prefix ns1:                  <http://commonwl.org/cwltool#> .
+@prefix rdf:                  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:                 <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sld:                  <https://w3id.org/cwl/salad#> .
+@prefix xsd:                  <http://www.w3.org/2001/XMLSchema#> .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#message>
+        rdf:type   fno:Parameter ;
+        ex:parent  "abstract-wf.cwl" ;
+        fno:type   xsd:string .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#wf_output>
+        rdf:type   fno:Output ;
+        ex:parent  "abstract-wf.cwl" ;
+        fno:type   xsd:string .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/sparql/cwl2fno.rq#workflowComposition>
+        rdf:type         fnoc:Composition ;
+        fnoc:composedOf  [ fnoc:mapFrom  [ ex:source  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#message> ] ;
+                           fnoc:mapTo    [ ex:sink  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo/message> ]
+                         ] ;
+        fnoc:composedOf  [ fnoc:mapFrom  [ ex:source  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo/out> ] ;
+                           fnoc:mapTo    [ ex:sink  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/message> ]
+                         ] ;
+        fnoc:composedOf  [ fnoc:mapFrom  [ ex:source  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#message> ] ;
+                           fnoc:mapTo    [ ex:sink  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo/message> ]
+                         ] ;
+        fnoc:composedOf  [ fnoc:mapFrom  [ ex:source  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo/out> ] ;
+                           fnoc:mapTo    [ ex:sink  <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/message> ]
+                         ] .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl#message>
+        rdf:type   fno:Parameter ;
+        ex:parent  "echo.cwl" ;
+        fno:type   xsd:string .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl>
+        rdf:type     fno:Function ;
+        ex:label     "abstract-wf.cwl" ;
+        fno:expects  ( <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#message> ) ;
+        fno:expects  ( <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#message> ) ;
+        fno:returns  ( <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#wf_output> ) ;
+        fno:returns  ( <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#wf_output> ) .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl>
+        rdf:type     fno:Function ;
+        ex:label     "echo.cwl" ;
+        fno:expects  ( <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl#message> ) ;
+        fno:expects  ( <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl#message> ) ;
+        fno:returns  ( <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl#out> ) ;
+        fno:returns  ( <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl#out> ) .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl#out>
+        rdf:type   fno:Output ;
+        ex:parent  "echo.cwl" ;
+        fno:type   xsd:string .

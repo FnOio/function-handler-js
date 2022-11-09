@@ -1,0 +1,233 @@
+# Example: Concrete CWL Workflow to FnO
+# Input: concrete-wf.cwl.ttl
+
+# CWL specs
+@prefix CommandOutputBinding: <https://w3id.org/cwl/cwl#CommandOutputBinding/> .
+@prefix Workflow:             <https://w3id.org/cwl/cwl#Workflow/> .
+@prefix cwl:                  <https://w3id.org/cwl/cwl#> .
+@prefix sld:                  <https://w3id.org/cwl/salad#> .
+
+# FnO
+@prefix fno:                  <https://w3id.org/function/ontology#> .
+@prefix fnoc:                 <https://w3id.org/function/vocabulary/composition#> .
+@prefix fnom: <https://w3id.org/function/vocabulary/mapping#> .
+@prefix fnoi: <https://w3id.org/function/vocabulary/implementation#> .
+@prefix fns: <http://example.com/functions#> .
+
+# Other
+@prefix ex:                   <http://example.org/> .
+@prefix ns1:                  <http://commonwl.org/cwltool#> .
+@prefix rdf:                  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:                 <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:                  <http://www.w3.org/2001/XMLSchema#> .
+
+# Base
+@base <http://gddmulde.be#> .
+
+# CWL documents
+@prefix wf: <concrete-wf.cwl#> .
+@prefix t_echo: <echo.cwl#> .
+@prefix t_uc: <uppercase.cwl#> .
+
+################################################################################
+# CWL Inputs -> FnO Parameters
+
+# echo input
+t_echo:messageParameter
+  a   fno:Parameter ;
+  fno:type   xsd:string;
+  fno:predicate t_echo:message;
+.
+
+# uppercase input
+t_uc:messageParameter
+  a   fno:Parameter ;
+  fno:type   xsd:string;
+  fno:predicate t_uc:message;
+.
+
+# workflow input
+wf:messageParameter
+  a   fno:Parameter ;
+  fno:type   xsd:string ;
+  fno:predicate wf:message ;
+.
+
+################################################################################
+# CWL Outputs -> FnO Outputs
+
+# echo output
+t_echo:returnOutput
+  a   fno:Output ;
+  fno:type   xsd:string;
+  fno:predicate t_echo:out;
+.
+
+# uppercase output
+t_uc:returnOutput
+  a fno:Output ;
+  fno:type xsd:string;
+  fno:predicate t_uc:uppercase_message ;
+.
+
+# workflow output
+wf:returnOutput
+  a fno:Output ;
+  fno:type   xsd:string;
+  fno:predicate wf:wf_output;
+.
+
+################################################################################
+# CWL Processes -> FnO Functions
+
+# process: workflow
+wf:Function
+  a fno:Function;
+  fno:expects ( wf:messageParameter );
+  fno:returns ( wf:returnOutput );
+.
+
+# process: echo
+t_echo:Function
+  a fno:Function;
+  fno:expects ( t_echo:messageParameter );
+  fno:returns ( t_echo:returnOutput );
+.
+
+# process: uppercase
+t_uc:Function
+  a fno:Function;
+  fno:expects ( t_uc:messageParameter );
+  fno:returns ( t_uc:returnOutput );
+.
+
+
+################################################################################
+# CWL Workflow -> Fno Composition
+
+wf:Composition
+  a fnoc:Composition ; 
+  
+  fnoc:composedOf [
+    # wf.in -> echo.in
+      fnoc:mapFrom [ 
+        fnoc:constituentFunction wf:Function ;
+        fnoc:functionParameter wf:messageParameter ;
+        
+      ];
+      
+      fnoc:mapTo [
+        fnoc:constituentFunction t_echo:Function ;
+        fnoc:functionParameter t_echo:messageParameter ;
+      ];
+    ],
+    # echo.out -> uppercase.in
+    [
+      fnoc:mapFrom [ 
+        fnoc:constituentFunction t_echo:Function ;
+        fnoc:functionOutput t_echo:returnOutput ;
+        
+      ];
+      
+      fnoc:mapTo [
+        fnoc:constituentFunction t_uc:Function ;
+        fnoc:functionParameter t_uc:messageParameter ;
+      ];
+    ],
+    # uppercase.out -> wf.out
+    [
+      fnoc:mapFrom [ 
+        fnoc:constituentFunction t_uc:Function ;
+        fnoc:functionOutput t_uc:returnOutput ;
+        
+      ];
+      
+      fnoc:mapTo [
+        fnoc:constituentFunction wf:Function ;
+        fnoc:functionOutput wf:returnOutput ;
+      ];
+    ]
+
+.
+
+################################################################################
+# FnO Implementations
+
+<#dev-platform>
+  a fnoi:Platform ;
+  fnoi:architecture "arm64" ; # uname -m
+  fnoi:operatingSystem "Darwin" ; # uname -s
+.
+
+t_echo:Implementation
+  a fno:Implementation, fnoi:RuntimeProcess ;
+  fnoi:baseCommand "echo" ;
+  fnoi:platform <#dev-platform> ;
+  # TODO: arguments
+
+.
+
+t_uc:Implementation
+  a fno:Implementation, fnoi:RuntimeProcess ;
+  # TODO: baseCommand
+  # TODO: arguments
+  fnoi:platform <#dev-platform> ;
+.
+
+################################################################################
+# FnO Mappings
+
+## Parameter mappings
+
+t_echo:messageParameterMapping
+  a fno:ParameterMapping, fnom:PositionParameterMapping ;
+  fnom:functionParameter t_echo:messageParameter ;
+  fnom:implementationParameterPosition 0;
+.
+
+
+# $ command arg1 -i data
+# arg1
+#   property: null | -N, -1, 0, 1, .., N | 
+#   value: <arg1>
+# $ command [artgs] [keyword args]
+# $ command  [keyword args]
+
+
+t_uc:messageParameterMapping
+  a fno:ParameterMapping, fnom:PositionParameterMapping ;
+  fnom:functionParameter t_uc:messageParameter ;
+  fnom:implementationParameterPosition 0;
+.
+
+## Output mappings
+
+t_echo:returnOutputputMapping
+  a fno:ReturnMapping, fnom:DefaultReturnMapping;
+  fnom:functionOutput t_echo:returnOutput ;
+.
+
+t_uc:outputMapping
+  a fno:ReturnMapping, fnom:DefaultReturnMapping;
+  fnom:functionOutput t_uc:returnOutput ;
+.
+
+# fno:Mapping
+
+t_echo:Mapping
+    a fno:Mapping ;
+    fno:function t_echo:Function ;
+    fno:implementation t_echo:Implementation ; # TODO: introduce a new fnoi:CommandLineTool class?
+    fno:parameterMapping t_echo:messageParameterMapping ;
+    fno:returnMapping t_echo:returnOutputputMapping ;
+    # fno:methodMapping <..> ; # TODO: delete?
+.
+
+t_uc:Mapping
+    a fno:Mapping ;
+    fno:function t_uc:Function ;
+    fno:implementation t_uc:Implementation ; # TODO: introduce a new fnoi:CommandLineTool class?
+    fno:parameterMapping t_uc:messageParameterMapping ;
+    fno:returnMapping t_uc:outputMapping ;
+    # fno:methodMapping <..> ; # TODO: delete?
+.

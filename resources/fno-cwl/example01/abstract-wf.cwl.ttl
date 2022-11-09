@@ -1,0 +1,56 @@
+@prefix CommandOutputBinding: <https://w3id.org/cwl/cwl#CommandOutputBinding/> .
+@prefix Workflow: <https://w3id.org/cwl/cwl#Workflow/> .
+@prefix cwl: <https://w3id.org/cwl/cwl#> .
+@prefix ns1: <http://commonwl.org/cwltool#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix sld: <https://w3id.org/cwl/salad#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl> a cwl:Workflow ;
+    ns1:original_cwlVersion "v1.2" ;
+    Workflow:steps <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo>,
+        <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase> ;
+    cwl:cwlVersion cwl:v1.2 ;
+    cwl:inputs <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#message> ;
+    cwl:outputs <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#wf_output> .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo> cwl:in <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo/message> ;
+    cwl:out <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo/out> ;
+    cwl:run <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl> .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo/message> cwl:source <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#message> .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase> cwl:in <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/message> ;
+    cwl:out <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/uppercase_message> ;
+    cwl:run [ a cwl:Operation ;
+            cwl:inputs <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/run/message> ;
+            cwl:outputs <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/run/uppercase_message> ] .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/message> cwl:source <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#echo/out> .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/run/message> sld:type xsd:string .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/run/uppercase_message> sld:type xsd:string .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#wf_output> cwl:outputSource <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#uppercase/uppercase_message> ;
+    sld:type xsd:string .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl> a cwl:CommandLineTool ;
+    ns1:original_cwlVersion "v1.2" ;
+    cwl:baseCommand ( "echo" ) ;
+    cwl:cwlVersion cwl:v1.2 ;
+    cwl:inputs <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl#message> ;
+    cwl:outputs <file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl#out> ;
+    cwl:stdout "output.txt" .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl#message> cwl:inputBinding [ ] ;
+    sld:type xsd:string .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/echo.cwl#out> cwl:outputBinding [ CommandOutputBinding:glob "output.txt" ;
+            CommandOutputBinding:outputEval "$(self[0].contents)" ;
+            cwl:loadContents true ] ;
+    sld:type xsd:string .
+
+<file:///Users/gertjandm/Git/KNoWS/projects/WORKFLOWS/fno-cwl/paper/example01/abstract-wf.cwl#message> sld:type xsd:string .
+
+
