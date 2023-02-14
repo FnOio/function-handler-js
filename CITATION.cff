@@ -1,0 +1,31 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Function Handler (JS implementation)
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Gertjan
+    family-names: De Mulder
+    email: gertjan.demulder@ugent.be
+    affiliation: >-
+      IDLab, Department of Electronics and Information
+      Systems, Ghent University – imec
+    orcid: 'https://orcid.org/0000-0001-7445-1881'
+  - given-names: Ben
+    family-names: De Meester
+    email: ben.demeester@ugent.be
+    affiliation: >-
+      IDLab, Department of Electronics and Information
+      Systems, Ghent University – imec
+    orcid: 'https://orcid.org/0000-0003-0248-0987'
+repository-code: 'https://github.com/FnOio/function-handler-js'
+url: 'https://fno.io'
+abstract: >-
+  The function handler tries to be a PoC SDK for FnO
+  function descriptions, and interact with a Function Hub
+  instance.
+license: MIT
