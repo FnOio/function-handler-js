@@ -1,5 +1,5 @@
 {
-  "name": "function-handler-js",
+  "name": "@fnoio/function-handler-js",
   "version": "0.3.0",
   "description": "FnO Function Handler",
   "main": "example-client.js",
